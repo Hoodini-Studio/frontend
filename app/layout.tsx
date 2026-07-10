@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Syne } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const syne = Syne({
@@ -15,8 +17,29 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Hoodini Studio | Coming Soon",
-  description: "Hoodini Studio is launching soon.",
+  metadataBase: new URL("https://hoodini.studio"),
+  title: {
+    default: "Hoodini Studio | Coming Soon",
+    template: "%s | Hoodini Studio",
+  },
+  description: "Something amazing is coming soon from Hoodini Studio.",
+  applicationName: "Hoodini Studio",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "/",
+    siteName: "Hoodini Studio",
+    title: "Hoodini Studio | Coming Soon",
+    description: "Something amazing is coming soon from Hoodini Studio.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hoodini Studio | Coming Soon",
+    description: "Something amazing is coming soon from Hoodini Studio.",
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +52,11 @@ export default function RootLayout({
       lang="en"
       className={`${syne.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">{children}</body>
+      <body className="min-h-full bg-background text-foreground">
+        {children}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
