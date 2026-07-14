@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { GuestOnly } from "@/components/auth/guest-only";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+
+export const metadata: Metadata = {
+  title: "Reset password",
+};
 
 export default function ResetPasswordPage() {
   return (

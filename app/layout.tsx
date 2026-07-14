@@ -18,6 +18,10 @@ const dmSans = DM_Sans({
   weight: ["400", "500"],
 });
 
+// TODO: Brand assets — replace when ready
+// - Favicon: replace `app/favicon.ico` (and optionally add `app/icon.png`, `app/apple-icon.png`)
+// - Open Graph / Twitter image: add `app/opengraph-image.png` (1200×630) and/or
+//   `app/twitter-image.png`, then wire them into `openGraph.images` / `twitter.images` below
 export const metadata: Metadata = {
   metadataBase: new URL("https://hoodini.studio"),
   title: {
@@ -36,11 +40,13 @@ export const metadata: Metadata = {
     siteName: "Hoodini Studio",
     title: "Hoodini Studio | Coming Soon",
     description: "Something amazing is coming soon from Hoodini Studio.",
+    // images: [{ url: "/opengraph-image.png", width: 1200, height: 630, alt: "Hoodini Studio" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Hoodini Studio | Coming Soon",
     description: "Something amazing is coming soon from Hoodini Studio.",
+    // images: ["/twitter-image.png"],
   },
 };
 

@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { GuestOnly } from "@/components/auth/guest-only";
 import { VerifyEmailNotice } from "@/components/auth/verify-email-notice";
+
+export const metadata: Metadata = {
+  title: "Verify your email",
+};
 
 export default function VerifyEmailPage() {
   return (
