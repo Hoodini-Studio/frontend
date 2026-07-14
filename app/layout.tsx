@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { DM_Sans, Syne } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { AppShell } from "@/components/layout/app-shell";
+import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
 const syne = Syne({
@@ -53,7 +55,9 @@ export default function RootLayout({
       className={`${syne.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">
-        {children}
+        <QueryProvider>
+          <AppShell>{children}</AppShell>
+        </QueryProvider>
         <Analytics />
         <SpeedInsights />
       </body>
