@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { AdminDashboardSkeleton } from "@/components/admin/admin-dashboard-skeleton";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/auth/roles";
 
@@ -29,11 +30,7 @@ export function AdminOnly({ children }: AdminOnlyProps) {
   }, [isLoading, router, user]);
 
   if (isLoading || !user || !isAdmin(user)) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center text-sm text-muted">
-        Loading...
-      </div>
-    );
+    return <AdminDashboardSkeleton />;
   }
 
   return children;

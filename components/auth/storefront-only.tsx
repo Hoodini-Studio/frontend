@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { LoadingLabel } from "@/components/i18n/loading-label";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/auth/roles";
 
@@ -20,11 +21,7 @@ export function StorefrontOnly({ children }: StorefrontOnlyProps) {
   }, [isLoading, router, user]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center text-sm text-muted">
-        Loading...
-      </div>
-    );
+    return <LoadingLabel />;
   }
 
   if (user && isAdmin(user)) {

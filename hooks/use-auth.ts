@@ -10,8 +10,10 @@ import {
   register,
   resendVerification,
   resetPassword,
+  updatePreferredLocale,
 } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
+import type { AppLocale } from "@/lib/i18n/config";
 import type {
   ChangePasswordInput,
   ForgotPasswordInput,
@@ -83,6 +85,17 @@ export function useResetPasswordMutation() {
 export function useChangePasswordMutation() {
   return useMutation({
     mutationFn: (payload: ChangePasswordInput) => changePassword(payload),
+  });
+}
+
+export function useUpdatePreferredLocaleMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (locale: AppLocale) => updatePreferredLocale(locale),
+    onSuccess: (response) => {
+      queryClient.setQueryData(["auth", "user"], response.data);
+    },
   });
 }
 

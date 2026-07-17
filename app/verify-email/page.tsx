@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { GuestOnly } from "@/components/auth/guest-only";
 import { VerifyEmailNotice } from "@/components/auth/verify-email-notice";
+import { LoadingLabel } from "@/components/i18n/loading-label";
 
 export const metadata: Metadata = {
   title: "Verify your email",
@@ -10,13 +11,7 @@ export const metadata: Metadata = {
 export default function VerifyEmailPage() {
   return (
     <GuestOnly>
-      <Suspense
-        fallback={
-          <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center text-sm text-muted">
-            Loading...
-          </div>
-        }
-      >
+      <Suspense fallback={<LoadingLabel />}>
         <VerifyEmailNotice />
       </Suspense>
     </GuestOnly>

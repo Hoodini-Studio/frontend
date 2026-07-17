@@ -2,20 +2,34 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { useResendVerificationMutation } from "@/hooks/use-auth";
 import { ApiError } from "@/lib/api/client";
-import { resendVerificationSchema, type ResendVerificationInput } from "@/schemas/auth";
+import {
+  createResendVerificationSchema,
+  type ResendVerificationInput,
+} from "@/schemas/auth";
+import { useApiMessageTranslator } from "@/hooks/use-api-message-translator";
 
 export function VerifyEmailNotice() {
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tValidation = useTranslations("validation");
+  const { translateMessage, translateErrors } = useApiMessageTranslator();
   const searchParams = useSearchParams();
   const emailFromQuery = searchParams.get("email") ?? "";
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const resendMutation = useResendVerificationMutation();
+
+  const resendVerificationSchema = useMemo(
+    () => createResendVerificationSchema(tValidation),
+    [tValidation],
+  );
 
   const {
     register,
@@ -35,37 +49,38 @@ export function VerifyEmailNotice() {
 
     try {
       const response = await resendMutation.mutateAsync(values);
-      setSuccessMessage(response.message);
+      setSuccessMessage(translateMessage(response.message));
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 429) {
-          setFormError("Too many attempts. Please wait a minute and try again.");
+          setFormError(tCommon("tooManyAttempts"));
           return;
         }
 
-        Object.entries(error.errors).forEach(([field, messages]) => {
+        const localizedErrors = translateErrors(error.errors);
+        Object.entries(localizedErrors).forEach(([field, messages]) => {
           if (field === "email") {
             setError(field, { message: messages[0] });
           }
         });
 
-        setFormError(error.message);
+        setFormError(translateMessage(error.message));
         return;
       }
 
-      setFormError("Unable to resend verification email.");
+      setFormError(t("unableToResend"));
     }
   });
 
   return (
     <AuthShell
-      title="Verify your email"
-      description="We sent a confirmation link. Verify your email before signing in."
+      title={t("verifyTitle")}
+      description={t("verifyDescription")}
       footer={
         <>
-          Already verified?{" "}
+          {t("alreadyVerified")}{" "}
           <Link href="/login" className="text-foreground underline-offset-4 hover:underline">
-            Sign in
+            {tCommon("signIn")}
           </Link>
         </>
       }
@@ -73,7 +88,7 @@ export function VerifyEmailNotice() {
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm text-foreground">
-            Email
+            {tCommon("email")}
           </label>
           <input
             id="email"
@@ -93,7 +108,9 @@ export function VerifyEmailNotice() {
           disabled={isSubmitting || resendMutation.isPending}
           className="w-full rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting || resendMutation.isPending ? "Sending..." : "Resend verification email"}
+          {isSubmitting || resendMutation.isPending
+            ? tCommon("sending")
+            : t("resendVerification")}
         </button>
       </form>
     </AuthShell>

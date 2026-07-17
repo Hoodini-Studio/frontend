@@ -2,19 +2,30 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { useResetPasswordMutation } from "@/hooks/use-auth";
 import { ApiError } from "@/lib/api/client";
-import { resetPasswordSchema, type ResetPasswordInput } from "@/schemas/auth";
+import { createResetPasswordSchema, type ResetPasswordInput } from "@/schemas/auth";
+import { useApiMessageTranslator } from "@/hooks/use-api-message-translator";
 
 export function ResetPasswordForm() {
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tValidation = useTranslations("validation");
+  const { translateMessage, translateErrors } = useApiMessageTranslator();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formError, setFormError] = useState<string | null>(null);
   const resetPasswordMutation = useResetPasswordMutation();
+
+  const resetPasswordSchema = useMemo(
+    () => createResetPasswordSchema(tValidation),
+    [tValidation],
+  );
 
   const {
     register,
@@ -36,11 +47,16 @@ export function ResetPasswordForm() {
 
     try {
       await resetPasswordMutation.mutateAsync(values);
-      router.push("/login?reset=1");
+      const params = new URLSearchParams({
+        reset: "1",
+        email: values.email,
+      });
+      router.push(`/login?${params.toString()}`);
       router.refresh();
     } catch (error) {
       if (error instanceof ApiError) {
-        Object.entries(error.errors).forEach(([field, messages]) => {
+        const localizedErrors = translateErrors(error.errors);
+        Object.entries(localizedErrors).forEach(([field, messages]) => {
           if (
             field === "email" ||
             field === "token" ||
@@ -51,23 +67,23 @@ export function ResetPasswordForm() {
           }
         });
 
-        setFormError(error.message);
+        setFormError(translateMessage(error.message));
         return;
       }
 
-      setFormError("Unable to reset password. Please try again.");
+      setFormError(t("unableToReset"));
     }
   });
 
   return (
     <AuthShell
-      title="Reset password"
-      description="Choose a new password for your account."
+      title={t("resetTitle")}
+      description={t("resetDescription")}
       footer={
         <>
-          Back to{" "}
+          {t("backTo")}{" "}
           <Link href="/login" className="text-foreground underline-offset-4 hover:underline">
-            sign in
+            {t("signInLower")}
           </Link>
         </>
       }
@@ -77,7 +93,7 @@ export function ResetPasswordForm() {
 
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm text-foreground">
-            Email
+            {tCommon("email")}
           </label>
           <input
             id="email"
@@ -92,7 +108,7 @@ export function ResetPasswordForm() {
 
         <div className="space-y-2">
           <label htmlFor="password" className="block text-sm text-foreground">
-            New password
+            {tCommon("newPassword")}
           </label>
           <input
             id="password"
@@ -108,7 +124,7 @@ export function ResetPasswordForm() {
 
         <div className="space-y-2">
           <label htmlFor="password_confirmation" className="block text-sm text-foreground">
-            Confirm password
+            {tCommon("confirmPassword")}
           </label>
           <input
             id="password_confirmation"
@@ -130,7 +146,9 @@ export function ResetPasswordForm() {
           disabled={isSubmitting || resetPasswordMutation.isPending}
           className="w-full rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting || resetPasswordMutation.isPending ? "Updating..." : "Update password"}
+          {isSubmitting || resetPasswordMutation.isPending
+            ? tCommon("updating")
+            : t("updatePassword")}
         </button>
       </form>
     </AuthShell>

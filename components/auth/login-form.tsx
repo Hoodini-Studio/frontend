@@ -2,22 +2,34 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { useLoginMutation } from "@/hooks/use-auth";
 import { getPostAuthPath } from "@/lib/auth/roles";
 import { ApiError } from "@/lib/api/client";
-import { loginSchema, type LoginInput } from "@/schemas/auth";
+import { setLocaleCookie } from "@/lib/i18n/cookie";
+import { normalizeLocale } from "@/lib/i18n/config";
+import { isVerifyEmailRequiredError } from "@/lib/i18n/api-messages";
+import { createLoginSchema, type LoginInput } from "@/schemas/auth";
+import { useApiMessageTranslator } from "@/hooks/use-api-message-translator";
 
 export function LoginForm() {
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tValidation = useTranslations("validation");
+  const { translateMessage, translateErrors } = useApiMessageTranslator();
   const router = useRouter();
   const searchParams = useSearchParams();
   const verified = searchParams.get("verified") === "1";
   const reset = searchParams.get("reset") === "1";
+  const emailFromQuery = searchParams.get("email") ?? "";
   const [formError, setFormError] = useState<string | null>(null);
   const loginMutation = useLoginMutation();
+
+  const loginSchema = useMemo(() => createLoginSchema(tValidation), [tValidation]);
 
   const {
     register,
@@ -27,7 +39,7 @@ export function LoginForm() {
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      email: emailFromQuery,
       password: "",
     },
   });
@@ -37,64 +49,66 @@ export function LoginForm() {
 
     try {
       const response = await loginMutation.mutateAsync(values);
+      setLocaleCookie(normalizeLocale(response.data.preferred_locale));
       router.push(getPostAuthPath(response.data));
       router.refresh();
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 429) {
-          setFormError("Too many login attempts. Please wait a minute and try again.");
+          setFormError(t("tooManyLoginAttempts"));
           return;
         }
 
         const emailError = error.errors.email?.[0] ?? "";
-        if (emailError.toLowerCase().includes("verify your email")) {
+        if (isVerifyEmailRequiredError(emailError)) {
           router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
           return;
         }
 
-        Object.entries(error.errors).forEach(([field, messages]) => {
+        const localizedErrors = translateErrors(error.errors);
+        Object.entries(localizedErrors).forEach(([field, messages]) => {
           if (field === "email" || field === "password") {
             setError(field, { message: messages[0] });
           }
         });
 
-        setFormError(error.message);
+        setFormError(translateMessage(error.message));
         return;
       }
 
-      setFormError("Unable to sign in. Please try again.");
+      setFormError(t("unableToSignIn"));
     }
   });
 
   return (
     <AuthShell
-      title="Sign in"
-      description="Use your Hoodini Studio account to continue."
+      title={t("signInTitle")}
+      description={t("signInDescription")}
       footer={
         <>
-          Don&apos;t have an account?{" "}
+          {t("noAccount")}{" "}
           <Link href="/register" className="text-foreground underline-offset-4 hover:underline">
-            Create one
+            {t("createOne")}
           </Link>
         </>
       }
     >
       {verified ? (
         <p className="mb-5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">
-          Email verified. You can sign in now.
+          {t("emailVerified")}
         </p>
       ) : null}
 
       {reset ? (
         <p className="mb-5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">
-          Password updated. You can sign in with your new password.
+          {t("passwordUpdated")}
         </p>
       ) : null}
 
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm text-foreground">
-            Email
+            {tCommon("email")}
           </label>
           <input
             id="email"
@@ -111,13 +125,13 @@ export function LoginForm() {
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <label htmlFor="password" className="block text-sm text-foreground">
-              Password
+              {tCommon("password")}
             </label>
             <Link
               href="/forgot-password"
               className="text-xs text-muted transition hover:text-foreground"
             >
-              Forgot password?
+              {t("forgotPassword")}
             </Link>
           </div>
           <input
@@ -139,7 +153,7 @@ export function LoginForm() {
           disabled={isSubmitting || loginMutation.isPending}
           className="w-full rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting || loginMutation.isPending ? "Signing in..." : "Sign in"}
+          {isSubmitting || loginMutation.isPending ? t("signingIn") : tCommon("signIn")}
         </button>
       </form>
     </AuthShell>

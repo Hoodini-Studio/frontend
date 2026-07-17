@@ -43,10 +43,10 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   const requestHeaders = new Headers(headers);
+  requestHeaders.set("Accept", "application/json");
 
   if (body !== undefined) {
     requestHeaders.set("Content-Type", "application/json");
-    requestHeaders.set("Accept", "application/json");
   }
 
   const xsrfToken = getCookie("XSRF-TOKEN");

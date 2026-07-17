@@ -1,21 +1,27 @@
 import type { Metadata } from "next";
 import { DM_Sans, Syne } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
+import { VercelMetrics } from "@/components/analytics/vercel-metrics";
 import { AppShell } from "@/components/layout/app-shell";
+import { LocaleSync } from "@/components/i18n/locale-sync";
 import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
 const syne = Syne({
   variable: "--font-syne",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["600", "700"],
+  display: "swap",
+  preload: true,
 });
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["400", "500"],
+  display: "swap",
+  preload: true,
 });
 
 // TODO: Brand assets — replace when ready
@@ -35,7 +41,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "sq_AL",
     url: "/",
     siteName: "Hoodini Studio",
     title: "Hoodini Studio | Coming Soon",
@@ -50,22 +56,27 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${syne.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">
-        <QueryProvider>
-          <AppShell>{children}</AppShell>
-        </QueryProvider>
-        <Analytics />
-        <SpeedInsights />
+        <NextIntlClientProvider messages={messages}>
+          <QueryProvider>
+            <LocaleSync />
+            <AppShell>{children}</AppShell>
+          </QueryProvider>
+        </NextIntlClientProvider>
+        <VercelMetrics />
       </body>
     </html>
   );

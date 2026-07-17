@@ -2,18 +2,26 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { useRegisterMutation } from "@/hooks/use-auth";
 import { ApiError } from "@/lib/api/client";
-import { registerSchema, type RegisterInput } from "@/schemas/auth";
+import { createRegisterSchema, type RegisterInput } from "@/schemas/auth";
+import { useApiMessageTranslator } from "@/hooks/use-api-message-translator";
 
 export function RegisterForm() {
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tValidation = useTranslations("validation");
+  const { translateMessage, translateErrors } = useApiMessageTranslator();
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
   const registerMutation = useRegisterMutation();
+
+  const registerSchema = useMemo(() => createRegisterSchema(tValidation), [tValidation]);
 
   const {
     register,
@@ -40,11 +48,12 @@ export function RegisterForm() {
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 429) {
-          setFormError("Too many registration attempts. Please wait a minute and try again.");
+          setFormError(t("tooManyRegisterAttempts"));
           return;
         }
 
-        Object.entries(error.errors).forEach(([field, messages]) => {
+        const localizedErrors = translateErrors(error.errors);
+        Object.entries(localizedErrors).forEach(([field, messages]) => {
           if (
             field === "name" ||
             field === "email" ||
@@ -55,23 +64,23 @@ export function RegisterForm() {
           }
         });
 
-        setFormError(error.message);
+        setFormError(translateMessage(error.message));
         return;
       }
 
-      setFormError("Unable to create your account. Please try again.");
+      setFormError(t("unableToRegister"));
     }
   });
 
   return (
     <AuthShell
-      title="Create account"
-      description="Register to start shopping with Hoodini Studio."
+      title={t("createAccountTitle")}
+      description={t("createAccountDescription")}
       footer={
         <>
-          Already have an account?{" "}
+          {t("haveAccount")}{" "}
           <Link href="/login" className="text-foreground underline-offset-4 hover:underline">
-            Sign in
+            {tCommon("signIn")}
           </Link>
         </>
       }
@@ -79,7 +88,7 @@ export function RegisterForm() {
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <label htmlFor="name" className="block text-sm text-foreground">
-            Name
+            {tCommon("name")}
           </label>
           <input
             id="name"
@@ -93,7 +102,7 @@ export function RegisterForm() {
 
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm text-foreground">
-            Email
+            {tCommon("email")}
           </label>
           <input
             id="email"
@@ -107,7 +116,7 @@ export function RegisterForm() {
 
         <div className="space-y-2">
           <label htmlFor="password" className="block text-sm text-foreground">
-            Password
+            {tCommon("password")}
           </label>
           <input
             id="password"
@@ -123,7 +132,7 @@ export function RegisterForm() {
 
         <div className="space-y-2">
           <label htmlFor="password_confirmation" className="block text-sm text-foreground">
-            Confirm password
+            {tCommon("confirmPassword")}
           </label>
           <input
             id="password_confirmation"
@@ -144,7 +153,7 @@ export function RegisterForm() {
           disabled={isSubmitting || registerMutation.isPending}
           className="w-full rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting || registerMutation.isPending ? "Creating account..." : "Create account"}
+          {isSubmitting || registerMutation.isPending ? t("creatingAccount") : t("createAccount")}
         </button>
       </form>
     </AuthShell>

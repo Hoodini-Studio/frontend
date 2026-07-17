@@ -95,6 +95,7 @@ body {
   filter: blur(34px);
   opacity: 0;
   animation: spotlight-reveal var(--beam-duration) cubic-bezier(0.22, 1, 0.36, 1) var(--beam-delay) forwards;
+  will-change: transform, opacity;
 }
 
 .spotlight-vignette {
@@ -139,6 +140,18 @@ body {
   }
 }
 
+@media (max-width: 640px) {
+  .spotlight-beam {
+    filter: blur(18px);
+    width: min(40vw, 8rem);
+    animation-duration: 3.5s;
+  }
+
+  .spotlight-reveal-glow {
+    animation-duration: 3.5s;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal-badge,
   .reveal-title,
@@ -157,5 +170,6 @@ body {
     animation: none;
     opacity: 0.85;
     transform: translateX(-50%) translateY(0);
+    will-change: auto;
   }
 }

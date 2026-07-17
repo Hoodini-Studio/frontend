@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useLogoutMutation } from "@/hooks/use-auth";
 import { getUserAvatarUrl, getUserInitials } from "@/lib/auth/user-display";
 import { isAdmin } from "@/lib/auth/roles";
+import { resetLocaleCookie } from "@/lib/i18n/cookie";
 import type { User } from "@/types/user";
 
 type UserMenuProps = {
@@ -13,6 +15,7 @@ type UserMenuProps = {
 };
 
 export function UserMenu({ user }: UserMenuProps) {
+  const t = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -49,6 +52,7 @@ export function UserMenu({ user }: UserMenuProps) {
   const handleLogout = async () => {
     setOpen(false);
     await logoutMutation.mutateAsync();
+    resetLocaleCookie();
     router.push("/login");
     router.refresh();
   };
@@ -89,7 +93,7 @@ export function UserMenu({ user }: UserMenuProps) {
               onClick={() => setOpen(false)}
               className="block px-4 py-2.5 text-sm text-foreground transition hover:bg-white/5"
             >
-              Dashboard
+              {t("dashboard")}
             </Link>
           ) : null}
 
@@ -99,7 +103,7 @@ export function UserMenu({ user }: UserMenuProps) {
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm text-foreground transition hover:bg-white/5"
           >
-            Account settings
+            {t("accountSettings")}
           </Link>
 
           <div className="my-2 border-t border-white/10" />
@@ -111,7 +115,7 @@ export function UserMenu({ user }: UserMenuProps) {
             disabled={logoutMutation.isPending}
             className="block w-full px-4 py-2.5 text-left text-sm text-red-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {logoutMutation.isPending ? "Signing out..." : "Log out"}
+            {logoutMutation.isPending ? t("signingOut") : t("logOut")}
           </button>
         </div>
       ) : null}

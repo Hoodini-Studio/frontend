@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { AccountSettingsSkeleton } from "@/components/profile/account-settings-skeleton";
 import { useCurrentUser } from "@/hooks/use-auth";
 
 type AuthOnlyProps = {
@@ -19,11 +20,7 @@ export function AuthOnly({ children }: AuthOnlyProps) {
   }, [isLoading, router, user]);
 
   if (isLoading || !user) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center text-sm text-muted">
-        Loading...
-      </div>
-    );
+    return <AccountSettingsSkeleton />;
   }
 
   return children;

@@ -1,53 +1,65 @@
 import { z } from "zod";
 
-export const loginSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-});
+type TranslateFn = (key: string) => string;
 
-export const registerSchema = loginSchema
-  .extend({
-    name: z.string().min(1, "Name is required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    password_confirmation: z.string().min(1, "Confirm your password"),
-  })
-  .refine((data) => data.password === data.password_confirmation, {
-    message: "Passwords do not match",
-    path: ["password_confirmation"],
+export function createLoginSchema(t: TranslateFn) {
+  return z.object({
+    email: z.string().email(t("email")),
+    password: z.string().min(1, t("passwordRequired")),
   });
+}
 
-export const forgotPasswordSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
-});
+export function createRegisterSchema(t: TranslateFn) {
+  return createLoginSchema(t)
+    .extend({
+      name: z.string().min(1, t("nameRequired")),
+      password: z.string().min(8, t("passwordMin")),
+      password_confirmation: z.string().min(1, t("confirmPasswordRequired")),
+    })
+    .refine((data) => data.password === data.password_confirmation, {
+      message: t("passwordsDoNotMatch"),
+      path: ["password_confirmation"],
+    });
+}
 
-export const resetPasswordSchema = z
-  .object({
-    email: z.string().email("Enter a valid email address"),
-    token: z.string().min(1, "Reset token is required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    password_confirmation: z.string().min(1, "Confirm your password"),
-  })
-  .refine((data) => data.password === data.password_confirmation, {
-    message: "Passwords do not match",
-    path: ["password_confirmation"],
+export function createForgotPasswordSchema(t: TranslateFn) {
+  return z.object({
+    email: z.string().email(t("email")),
   });
+}
 
-export const changePasswordSchema = z
-  .object({
-    current_password: z.string().min(1, "Current password is required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    password_confirmation: z.string().min(1, "Confirm your password"),
-  })
-  .refine((data) => data.password === data.password_confirmation, {
-    message: "Passwords do not match",
-    path: ["password_confirmation"],
-  });
+export function createResetPasswordSchema(t: TranslateFn) {
+  return z
+    .object({
+      email: z.string().email(t("email")),
+      token: z.string().min(1, t("resetTokenRequired")),
+      password: z.string().min(8, t("passwordMin")),
+      password_confirmation: z.string().min(1, t("confirmPasswordRequired")),
+    })
+    .refine((data) => data.password === data.password_confirmation, {
+      message: t("passwordsDoNotMatch"),
+      path: ["password_confirmation"],
+    });
+}
 
-export const resendVerificationSchema = forgotPasswordSchema;
+export function createChangePasswordSchema(t: TranslateFn) {
+  return z
+    .object({
+      current_password: z.string().min(1, t("currentPasswordRequired")),
+      password: z.string().min(8, t("passwordMin")),
+      password_confirmation: z.string().min(1, t("confirmPasswordRequired")),
+    })
+    .refine((data) => data.password === data.password_confirmation, {
+      message: t("passwordsDoNotMatch"),
+      path: ["password_confirmation"],
+    });
+}
 
-export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;
-export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
-export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
-export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
-export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
+export const createResendVerificationSchema = createForgotPasswordSchema;
+
+export type LoginInput = z.infer<ReturnType<typeof createLoginSchema>>;
+export type RegisterInput = z.infer<ReturnType<typeof createRegisterSchema>>;
+export type ForgotPasswordInput = z.infer<ReturnType<typeof createForgotPasswordSchema>>;
+export type ResetPasswordInput = z.infer<ReturnType<typeof createResetPasswordSchema>>;
+export type ChangePasswordInput = z.infer<ReturnType<typeof createChangePasswordSchema>>;
+export type ResendVerificationInput = ForgotPasswordInput;

@@ -2,17 +2,28 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { useForgotPasswordMutation } from "@/hooks/use-auth";
 import { ApiError } from "@/lib/api/client";
-import { forgotPasswordSchema, type ForgotPasswordInput } from "@/schemas/auth";
+import { createForgotPasswordSchema, type ForgotPasswordInput } from "@/schemas/auth";
+import { useApiMessageTranslator } from "@/hooks/use-api-message-translator";
 
 export function ForgotPasswordForm() {
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tValidation = useTranslations("validation");
+  const { translateMessage, translateErrors } = useApiMessageTranslator();
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const forgotPasswordMutation = useForgotPasswordMutation();
+
+  const forgotPasswordSchema = useMemo(
+    () => createForgotPasswordSchema(tValidation),
+    [tValidation],
+  );
 
   const {
     register,
@@ -32,37 +43,38 @@ export function ForgotPasswordForm() {
 
     try {
       const response = await forgotPasswordMutation.mutateAsync(values);
-      setSuccessMessage(response.message);
+      setSuccessMessage(translateMessage(response.message));
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 429) {
-          setFormError("Too many attempts. Please wait a minute and try again.");
+          setFormError(tCommon("tooManyAttempts"));
           return;
         }
 
-        Object.entries(error.errors).forEach(([field, messages]) => {
+        const localizedErrors = translateErrors(error.errors);
+        Object.entries(localizedErrors).forEach(([field, messages]) => {
           if (field === "email") {
             setError(field, { message: messages[0] });
           }
         });
 
-        setFormError(error.message);
+        setFormError(translateMessage(error.message));
         return;
       }
 
-      setFormError("Unable to send reset email. Please try again.");
+      setFormError(t("unableToSendReset"));
     }
   });
 
   return (
     <AuthShell
-      title="Forgot password"
-      description="Enter your email and we'll send a reset link."
+      title={t("forgotTitle")}
+      description={t("forgotDescription")}
       footer={
         <>
-          Remembered it?{" "}
+          {t("rememberedIt")}{" "}
           <Link href="/login" className="text-foreground underline-offset-4 hover:underline">
-            Sign in
+            {tCommon("signIn")}
           </Link>
         </>
       }
@@ -70,7 +82,7 @@ export function ForgotPasswordForm() {
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm text-foreground">
-            Email
+            {tCommon("email")}
           </label>
           <input
             id="email"
@@ -90,7 +102,9 @@ export function ForgotPasswordForm() {
           disabled={isSubmitting || forgotPasswordMutation.isPending}
           className="w-full rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting || forgotPasswordMutation.isPending ? "Sending..." : "Send reset link"}
+          {isSubmitting || forgotPasswordMutation.isPending
+            ? t("sendingEmail")
+            : t("sendResetLink")}
         </button>
       </form>
     </AuthShell>
