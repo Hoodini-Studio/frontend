@@ -1,20 +1,13 @@
-/**
- * Maps known English API / Laravel messages to `api.*` translation keys.
- * Backend stays English; the UI localizes what the user sees.
- */
 export const API_MESSAGE_KEYS = {
-  // Top-level / generic
   "The given data was invalid.": "givenDataInvalid",
   "Request failed": "requestFailed",
   "Too Many Attempts.": "tooManyAttempts",
 
-  // Auth service errors
   "The provided credentials are incorrect.": "credentialsIncorrect",
   "Please verify your email address before signing in.": "verifyEmailBeforeSignIn",
   "The current password is incorrect.": "currentPasswordIncorrect",
   "Invalid verification link.": "invalidVerificationLink",
 
-  // Auth controller success / info
   "Registration successful. Please check your email to verify your account.":
     "registrationSuccessful",
   "Logged out successfully.": "loggedOut",
@@ -23,7 +16,6 @@ export const API_MESSAGE_KEYS = {
   "Password changed successfully.": "passwordChanged",
   "If that account needs verification, we sent a new email.": "verificationEmailSent",
 
-  // Laravel password broker (via __($status))
   "This password reset token is invalid.": "passwordResetTokenInvalid",
   "We can't find a user with that email address.": "passwordResetUserNotFound",
   "Please wait before retrying.": "passwordResetThrottled",
@@ -31,7 +23,6 @@ export const API_MESSAGE_KEYS = {
   "passwords.user": "passwordResetUserNotFound",
   "passwords.throttled": "passwordResetThrottled",
 
-  // Common FormRequest / Laravel validation
   "The name field is required.": "nameRequired",
   "The email field is required.": "emailRequired",
   "The password field is required.": "passwordRequired",
