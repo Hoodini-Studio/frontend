@@ -13,23 +13,25 @@ type AdminOnlyProps = {
 export function AdminOnly({ children }: AdminOnlyProps) {
   const router = useRouter();
   const { data: user, isLoading } = useCurrentUser();
+  const userId = user?.id;
+  const userIsAdmin = isAdmin(user);
 
   useEffect(() => {
     if (isLoading) {
       return;
     }
 
-    if (!user) {
+    if (!userId) {
       router.replace("/login");
       return;
     }
 
-    if (!isAdmin(user)) {
+    if (!userIsAdmin) {
       router.replace("/");
     }
-  }, [isLoading, router, user]);
+  }, [isLoading, router, userId, userIsAdmin]);
 
-  if (isLoading || !user || !isAdmin(user)) {
+  if (isLoading || !user || !userIsAdmin) {
     return <AdminDashboardSkeleton />;
   }
 

@@ -26,9 +26,9 @@ import type {
 export function useCurrentUser() {
   return useQuery({
     queryKey: ["auth", "user"],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       try {
-        const response = await getCurrentUser();
+        const response = await getCurrentUser({ signal });
         return response.data;
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
@@ -39,6 +39,9 @@ export function useCurrentUser() {
       }
     },
     retry: false,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

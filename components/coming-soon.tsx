@@ -1,6 +1,34 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useEffect, useRef } from "react";
+
+function SpotlightBeam() {
+  const beamRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const beam = beamRef.current;
+
+    if (!beam || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    beam.classList.add("is-animating");
+
+    const handleAnimationEnd = () => {
+      beam.classList.remove("is-animating");
+    };
+
+    beam.addEventListener("animationend", handleAnimationEnd);
+
+    return () => {
+      beam.removeEventListener("animationend", handleAnimationEnd);
+      beam.classList.remove("is-animating");
+    };
+  }, []);
+
+  return <div ref={beamRef} className="spotlight-beam" />;
+}
 
 export function ComingSoon() {
   const t = useTranslations("comingSoon");
@@ -11,7 +39,7 @@ export function ComingSoon() {
       <div aria-hidden className="spotlight-scene pointer-events-none absolute inset-0 overflow-hidden">
         <div className="spotlight-base" />
         <div className="spotlight-reveal-glow" />
-        <div className="spotlight-beam" />
+        <SpotlightBeam />
         <div className="spotlight-vignette" />
       </div>
 

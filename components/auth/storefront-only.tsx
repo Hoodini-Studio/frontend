@@ -13,18 +13,19 @@ type StorefrontOnlyProps = {
 export function StorefrontOnly({ children }: StorefrontOnlyProps) {
   const router = useRouter();
   const { data: user, isLoading } = useCurrentUser();
+  const userIsAdmin = isAdmin(user);
 
   useEffect(() => {
-    if (!isLoading && user && isAdmin(user)) {
+    if (!isLoading && userIsAdmin) {
       router.replace("/admin/dashboard");
     }
-  }, [isLoading, router, user]);
+  }, [isLoading, router, userIsAdmin]);
 
   if (isLoading) {
     return <LoadingLabel />;
   }
 
-  if (user && isAdmin(user)) {
+  if (userIsAdmin) {
     return null;
   }
 

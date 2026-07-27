@@ -12,12 +12,13 @@ type AuthOnlyProps = {
 export function AuthOnly({ children }: AuthOnlyProps) {
   const router = useRouter();
   const { data: user, isLoading } = useCurrentUser();
+  const userId = user?.id;
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !userId) {
       router.replace("/login");
     }
-  }, [isLoading, router, user]);
+  }, [isLoading, router, userId]);
 
   if (isLoading || !user) {
     return <AccountSettingsSkeleton />;

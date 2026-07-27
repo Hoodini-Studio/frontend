@@ -13,12 +13,13 @@ type GuestOnlyProps = {
 export function GuestOnly({ children }: GuestOnlyProps) {
   const router = useRouter();
   const { data: user, isLoading } = useCurrentUser();
+  const postAuthPath = user ? getPostAuthPath(user) : null;
 
   useEffect(() => {
-    if (!isLoading && user) {
-      router.replace(getPostAuthPath(user));
+    if (!isLoading && postAuthPath) {
+      router.replace(postAuthPath);
     }
-  }, [isLoading, router, user]);
+  }, [isLoading, postAuthPath, router]);
 
   if (isLoading || user) {
     return <LoadingLabel />;

@@ -14,8 +14,8 @@ export type RegisterResponse = AuthResponse & {
   message: string;
 };
 
-export function getCurrentUser() {
-  return apiRequest<AuthResponse>("/api/user");
+export function getCurrentUser(init?: { signal?: AbortSignal }) {
+  return apiRequest<AuthResponse>("/api/user", { signal: init?.signal });
 }
 
 export function login(credentials: LoginInput) {
