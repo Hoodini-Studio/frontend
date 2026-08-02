@@ -6,10 +6,14 @@ import { useTranslations } from "next-intl";
 import { usePublishedProducts } from "@/hooks/use-products";
 import { formatEuroFromCents } from "@/lib/money";
 
+const HOME_PRODUCT_LIMIT = 48;
+
 export function StorefrontCatalog() {
   const t = useTranslations("store");
   const tCommon = useTranslations("common");
-  const { data, isLoading, isError } = usePublishedProducts();
+  const { data, isLoading, isError } = usePublishedProducts({
+    perPage: HOME_PRODUCT_LIMIT,
+  });
   const products = data?.data ?? [];
 
   return (
@@ -19,7 +23,6 @@ export function StorefrontCatalog() {
         <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
           {tCommon("brand")}
         </h1>
-        <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">{t("subtitle")}</p>
       </header>
 
       {isLoading ? <p className="text-sm text-muted">{tCommon("loading")}</p> : null}

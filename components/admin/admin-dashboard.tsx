@@ -15,11 +15,6 @@ export function AdminDashboard() {
   const draftCount = drafts.data?.meta?.total;
   const countsLoading = all.isLoading || published.isLoading || drafts.isLoading;
 
-  const upcoming = [
-    { key: "orders", label: t("orders"), description: t("ordersDescription") },
-    { key: "customers", label: t("customers"), description: t("customersDescription") },
-  ] as const;
-
   return (
     <main className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden">
       <div
@@ -45,10 +40,6 @@ export function AdminDashboard() {
           aria-labelledby="admin-catalog-heading"
           className="mt-14 animate-[fade-in-up_0.7s_ease-out] [animation-delay:120ms] [animation-fill-mode:both]"
         >
-          <p className="mb-4 text-xs uppercase tracking-[0.22em] text-muted">
-            {t("catalogSection")}
-          </p>
-
           <Link
             href="/admin/products"
             className="group block outline-none transition focus-visible:ring-2 focus-visible:ring-white/25"
@@ -120,33 +111,47 @@ export function AdminDashboard() {
         </section>
 
         <section
-          aria-labelledby="admin-upcoming-heading"
+          aria-labelledby="admin-more-heading"
           className="mt-16 animate-[fade-in-up_0.7s_ease-out] [animation-delay:220ms] [animation-fill-mode:both]"
         >
           <h2
-            id="admin-upcoming-heading"
+            id="admin-more-heading"
             className="text-xs uppercase tracking-[0.22em] text-muted"
           >
-            {t("upcomingSection")}
+            {t("moreSection")}
           </h2>
 
           <ul className="mt-5 divide-y divide-white/10 border-y border-white/10">
-            {upcoming.map((item) => (
-              <li
-                key={item.key}
-                className="flex items-start justify-between gap-6 px-4 py-5 opacity-60 sm:px-6"
+            <li>
+              <Link
+                href="/admin/users"
+                className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/[0.03] focus-visible:bg-white/[0.03] focus-visible:outline-none sm:px-6"
               >
                 <div className="min-w-0">
                   <p className="font-display text-lg font-semibold text-foreground">
-                    {item.label}
+                    {t("users")}
                   </p>
-                  <p className="mt-1 text-sm text-muted">{item.description}</p>
+                  <p className="mt-1 text-sm text-muted">{t("usersDescription")}</p>
                 </div>
-                <span className="shrink-0 pt-1 text-[10px] uppercase tracking-[0.2em] text-muted">
-                  {t("soon")}
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 pt-1 text-muted transition group-hover:translate-x-0.5 group-hover:text-foreground"
+                >
+                  →
                 </span>
-              </li>
-            ))}
+              </Link>
+            </li>
+            <li className="flex items-start justify-between gap-6 px-4 py-5 opacity-60 sm:px-6">
+              <div className="min-w-0">
+                <p className="font-display text-lg font-semibold text-foreground">
+                  {t("orders")}
+                </p>
+                <p className="mt-1 text-sm text-muted">{t("ordersDescription")}</p>
+              </div>
+              <span className="shrink-0 pt-1 text-[10px] uppercase tracking-[0.2em] text-muted">
+                {t("soon")}
+              </span>
+            </li>
           </ul>
         </section>
       </div>

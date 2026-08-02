@@ -18,7 +18,6 @@ export function AdminDashboardSkeleton() {
         </div>
 
         <div className="mt-14">
-          <SkeletonBlock className="mb-4 h-3 w-20" />
           <div className="border-y border-white/10 py-8 sm:py-10">
             <SkeletonBlock className="h-9 w-40 sm:w-52" />
             <SkeletonBlock className="mt-4 h-4 w-full max-w-lg" />
