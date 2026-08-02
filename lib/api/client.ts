@@ -71,6 +71,8 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const { body, skipCsrf = false, headers, signal, timeoutMs = DEFAULT_TIMEOUT_MS, ...rest } =
     options;
 
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+
   if (!skipCsrf && body !== undefined) {
     await ensureCsrfCookie();
   }
@@ -78,7 +80,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const requestHeaders = new Headers(headers);
   requestHeaders.set("Accept", "application/json");
 
-  if (body !== undefined) {
+  if (body !== undefined && !isFormData) {
     requestHeaders.set("Content-Type", "application/json");
   }
 
@@ -96,7 +98,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     signal: fetchSignal,
     credentials: "include",
     headers: requestHeaders,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
   });
 
   if (response.status === 204) {

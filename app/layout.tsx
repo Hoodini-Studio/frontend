@@ -6,6 +6,7 @@ import { VercelMetrics } from "@/components/analytics/vercel-metrics";
 import { AppShell } from "@/components/layout/app-shell";
 import { LocaleSync } from "@/components/i18n/locale-sync";
 import { QueryProvider } from "@/providers/query-provider";
+import { ToastProvider } from "@/providers/toast-provider";
 import "./globals.css";
 
 const syne = Syne({
@@ -31,10 +32,10 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL("https://hoodini.studio"),
   title: {
-    default: "Hoodini Studio | Coming Soon",
+    default: "Hoodini Studio",
     template: "%s | Hoodini Studio",
   },
-  description: "Something amazing is coming soon from Hoodini Studio.",
+  description: "Shop the latest from Hoodini Studio.",
   applicationName: "Hoodini Studio",
   alternates: {
     canonical: "/",
@@ -44,14 +45,14 @@ export const metadata: Metadata = {
     locale: "sq_AL",
     url: "/",
     siteName: "Hoodini Studio",
-    title: "Hoodini Studio | Coming Soon",
-    description: "Something amazing is coming soon from Hoodini Studio.",
+    title: "Hoodini Studio",
+    description: "Shop the latest from Hoodini Studio.",
     // images: [{ url: "/opengraph-image.png", width: 1200, height: 630, alt: "Hoodini Studio" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hoodini Studio | Coming Soon",
-    description: "Something amazing is coming soon from Hoodini Studio.",
+    title: "Hoodini Studio",
+    description: "Shop the latest from Hoodini Studio.",
     // images: ["/twitter-image.png"],
   },
 };
@@ -72,8 +73,10 @@ export default async function RootLayout({
       <body className="min-h-full bg-background text-foreground">
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
-            <LocaleSync />
-            <AppShell>{children}</AppShell>
+            <ToastProvider>
+              <LocaleSync />
+              <AppShell>{children}</AppShell>
+            </ToastProvider>
           </QueryProvider>
         </NextIntlClientProvider>
         <VercelMetrics />

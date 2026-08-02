@@ -1,12 +1,12 @@
 "use client";
 
-import { ComingSoon } from "@/components/coming-soon";
+import { StorefrontCatalog } from "@/components/storefront-catalog";
 import { StorefrontOnly } from "@/components/auth/storefront-only";
 
 export function StorefrontHome() {
   return (
     <StorefrontOnly>
-      <ComingSoon />
+      <StorefrontCatalog />
     </StorefrontOnly>
   );
 }

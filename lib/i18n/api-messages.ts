@@ -34,6 +34,7 @@ export const API_MESSAGE_KEYS = {
   "The password field confirmation does not match.": "passwordConfirmation",
   "The preferred locale field is required.": "preferredLocaleRequired",
   "The selected preferred locale is invalid.": "preferredLocaleInvalid",
+  "At least one product image is required.": "atLeastOneProductImageRequired",
 } as const;
 
 export type ApiMessageKey = (typeof API_MESSAGE_KEYS)[keyof typeof API_MESSAGE_KEYS];

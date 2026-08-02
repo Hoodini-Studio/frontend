@@ -3,7 +3,7 @@ import { StorefrontHome } from "@/components/storefront-home";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Hoodini Studio | Coming Soon",
+    absolute: "Hoodini Studio",
   },
 };
 
