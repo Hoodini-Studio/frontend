@@ -1,3 +1,5 @@
+import { LOCALE_COOKIE } from "@/lib/i18n/config";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const DEFAULT_TIMEOUT_MS = 15_000;
 
@@ -79,6 +81,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   const requestHeaders = new Headers(headers);
   requestHeaders.set("Accept", "application/json");
+
+  const locale = getCookie(LOCALE_COOKIE);
+  if (locale) {
+    requestHeaders.set("X-Locale", locale);
+  }
 
   if (body !== undefined && !isFormData) {
     requestHeaders.set("Content-Type", "application/json");

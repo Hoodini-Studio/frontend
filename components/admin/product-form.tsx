@@ -14,6 +14,12 @@ import {
 } from "react";
 import { useForm } from "react-hook-form";
 import { useDeleteProductImageMutation } from "@/hooks/use-products";
+import {
+  useAdminCategories,
+  useAdminColors,
+  useAdminGenders,
+  useAdminSizes,
+} from "@/hooks/use-catalog";
 import { useApiMessageTranslator } from "@/hooks/use-api-message-translator";
 import { ApiError } from "@/lib/api/client";
 import { useToast } from "@/providers/toast-provider";
@@ -68,8 +74,24 @@ export function ProductForm({ product }: ProductFormProps) {
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [dropKey, setDropKey] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [categoryIds, setCategoryIds] = useState<string[]>(
+    () => product?.categories?.map((item) => item.id) ?? [],
+  );
+  const [colorIds, setColorIds] = useState<string[]>(
+    () => product?.colors?.map((item) => item.id) ?? [],
+  );
+  const [sizeIds, setSizeIds] = useState<string[]>(
+    () => product?.sizes?.map((item) => item.id) ?? [],
+  );
+  const [genderIds, setGenderIds] = useState<string[]>(
+    () => product?.genders?.map((item) => item.id) ?? [],
+  );
   const saveLockRef = useRef(false);
   const deleteImageMutation = useDeleteProductImageMutation(product?.id ?? "");
+  const categoriesQuery = useAdminCategories();
+  const colorsQuery = useAdminColors();
+  const sizesQuery = useAdminSizes();
+  const gendersQuery = useAdminGenders();
 
   const {
     register,
@@ -79,7 +101,8 @@ export function ProductForm({ product }: ProductFormProps) {
     resolver: zodResolver(createProductFormSchema(tValidation)),
     defaultValues: {
       name: product?.name ?? "",
-      description: product?.description ?? "",
+      description_en: product?.description_en ?? "",
+      description_sq: product?.description_sq ?? "",
     },
   });
 
@@ -90,7 +113,19 @@ export function ProductForm({ product }: ProductFormProps) {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["admin", "products"] }),
       queryClient.invalidateQueries({ queryKey: ["products", "published"] }),
+      queryClient.invalidateQueries({ queryKey: ["admin", "categories"] }),
+      queryClient.invalidateQueries({ queryKey: ["admin", "colors"] }),
+      queryClient.invalidateQueries({ queryKey: ["admin", "sizes"] }),
+      queryClient.invalidateQueries({ queryKey: ["admin", "genders"] }),
     ]);
+  };
+
+  const toggleId = (
+    current: string[],
+    id: string,
+    setter: (value: string[]) => void,
+  ) => {
+    setter(current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id]);
   };
 
   const handlePriceKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -286,10 +321,19 @@ export function ProductForm({ product }: ProductFormProps) {
 
       try {
         const payload = {
-          name: values.name,
-          description: values.description?.trim() ? values.description.trim() : null,
+          name: values.name.trim(),
+          description_en: values.description_en?.trim()
+            ? values.description_en.trim()
+            : null,
+          description_sq: values.description_sq?.trim()
+            ? values.description_sq.trim()
+            : null,
           price: priceCents,
           status,
+          category_ids: categoryIds,
+          color_ids: colorIds,
+          size_ids: sizeIds,
+          gender_ids: genderIds,
         };
 
         if (product) {
@@ -361,16 +405,29 @@ export function ProductForm({ product }: ProductFormProps) {
           ) : null}
         </div>
 
-        <div>
-          <label htmlFor="description" className="mb-2 block text-sm text-muted">
-            {t("description")}
-          </label>
-          <textarea
-            id="description"
-            rows={4}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30"
-            {...register("description")}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="description_en" className="mb-2 block text-sm text-muted">
+              {t("descriptionEn")}
+            </label>
+            <textarea
+              id="description_en"
+              rows={4}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30"
+              {...register("description_en")}
+            />
+          </div>
+          <div>
+            <label htmlFor="description_sq" className="mb-2 block text-sm text-muted">
+              {t("descriptionSq")}
+            </label>
+            <textarea
+              id="description_sq"
+              rows={4}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30"
+              {...register("description_sq")}
+            />
+          </div>
         </div>
 
         <div>
@@ -399,6 +456,140 @@ export function ProductForm({ product }: ProductFormProps) {
             <p className="mt-2 text-xs text-muted">
               {t("priceHint", { amount: formatEuroFromCents(priceCents) })}
             </p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-5 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+        <div>
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            {t("taxonomyTitle")}
+          </h2>
+          <p className="mt-1 text-sm text-muted">{t("taxonomyHint")}</p>
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm text-muted">{t("categories")}</p>
+          {categoriesQuery.isLoading ? (
+            <p className="text-sm text-muted">{t("taxonomyLoading")}</p>
+          ) : (categoriesQuery.data?.data.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted">{t("taxonomyEmpty")}</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {categoriesQuery.data?.data.map((category) => {
+                const selected = categoryIds.includes(category.id);
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    disabled={pending}
+                    onClick={() => toggleId(categoryIds, category.id, setCategoryIds)}
+                    className={`rounded-lg border px-3 py-2 text-sm transition ${
+                      selected
+                        ? "border-white/40 bg-white/10 text-foreground"
+                        : "border-white/10 text-muted hover:border-white/25 hover:text-foreground"
+                    }`}
+                  >
+                    {[category.name_en, category.name_sq].filter(Boolean).join(" / ") || category.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm text-muted">{t("colors")}</p>
+          {colorsQuery.isLoading ? (
+            <p className="text-sm text-muted">{t("taxonomyLoading")}</p>
+          ) : (colorsQuery.data?.data.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted">{t("taxonomyEmpty")}</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {colorsQuery.data?.data.map((color) => {
+                const selected = colorIds.includes(color.id);
+                return (
+                  <button
+                    key={color.id}
+                    type="button"
+                    disabled={pending}
+                    onClick={() => toggleId(colorIds, color.id, setColorIds)}
+                    className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+                      selected
+                        ? "border-white/40 bg-white/10 text-foreground"
+                        : "border-white/10 text-muted hover:border-white/25 hover:text-foreground"
+                    }`}
+                  >
+                    <span
+                      className="h-3.5 w-3.5 rounded-full border border-white/20"
+                      style={{ backgroundColor: color.hex }}
+                      aria-hidden="true"
+                    />
+                    {[color.name_en, color.name_sq].filter(Boolean).join(" / ") || color.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm text-muted">{t("sizes")}</p>
+          {sizesQuery.isLoading ? (
+            <p className="text-sm text-muted">{t("taxonomyLoading")}</p>
+          ) : (sizesQuery.data?.data.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted">{t("taxonomyEmpty")}</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {sizesQuery.data?.data.map((size) => {
+                const selected = sizeIds.includes(size.id);
+                return (
+                  <button
+                    key={size.id}
+                    type="button"
+                    disabled={pending}
+                    onClick={() => toggleId(sizeIds, size.id, setSizeIds)}
+                    className={`rounded-lg border px-3 py-2 text-sm transition ${
+                      selected
+                        ? "border-white/40 bg-white/10 text-foreground"
+                        : "border-white/10 text-muted hover:border-white/25 hover:text-foreground"
+                    }`}
+                  >
+                    {size.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm text-muted">{t("genders")}</p>
+          {gendersQuery.isLoading ? (
+            <p className="text-sm text-muted">{t("taxonomyLoading")}</p>
+          ) : (gendersQuery.data?.data.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted">{t("taxonomyEmpty")}</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {gendersQuery.data?.data.map((gender) => {
+                const selected = genderIds.includes(gender.id);
+                return (
+                  <button
+                    key={gender.id}
+                    type="button"
+                    disabled={pending}
+                    onClick={() => toggleId(genderIds, gender.id, setGenderIds)}
+                    className={`rounded-lg border px-3 py-2 text-sm transition ${
+                      selected
+                        ? "border-white/40 bg-white/10 text-foreground"
+                        : "border-white/10 text-muted hover:border-white/25 hover:text-foreground"
+                    }`}
+                  >
+                    {[gender.name_en, gender.name_sq].filter(Boolean).join(" / ") || gender.name}
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>

@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { use, useMemo, useState } from "react";
 import { usePublishedProduct } from "@/hooks/use-products";
 import { formatEuroFromCents } from "@/lib/money";
+import { ProductCatalogOptions } from "@/components/product-catalog-options";
+import { localizedDescription } from "@/lib/i18n/localized";
+import { normalizeLocale } from "@/lib/i18n/config";
 
 type ProductDetailProps = {
   slug: string;
@@ -14,6 +17,7 @@ type ProductDetailProps = {
 export function ProductDetail({ slug }: ProductDetailProps) {
   const t = useTranslations("store");
   const tCommon = useTranslations("common");
+  const locale = normalizeLocale(useLocale());
   const { data, isLoading, isError } = usePublishedProduct(slug);
   const product = data?.data;
   const [activeIndex, setActiveIndex] = useState(0);
@@ -73,7 +77,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                 {mainImageUrl ? (
                   <Image
                     src={mainImageUrl}
-                    alt={product.name}
+                    alt={product.name ?? ""}
                     fill
                     unoptimized
                     className="object-cover"
@@ -149,9 +153,20 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                 {formatEuroFromCents(product.price)}
               </p>
 
-              {product.description ? (
+              <div className="mt-8">
+                <ProductCatalogOptions
+                  product={product}
+                  locale={locale}
+                  categoryLabel={t("categoryLabel")}
+                  genderLabel={t("genderLabel")}
+                  colorLabel={t("colorLabel")}
+                  sizeLabel={t("sizeLabel")}
+                />
+              </div>
+
+              {localizedDescription(product, locale) ? (
                 <p className="mt-8 whitespace-pre-wrap text-base leading-relaxed text-muted">
-                  {product.description}
+                  {localizedDescription(product, locale)}
                 </p>
               ) : (
                 <p className="mt-8 text-base text-muted">{t("noDescription")}</p>

@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { formatEuroFromCents } from "@/lib/money";
 import type { Product } from "@/types/product";
+import { ProductCatalogOptions } from "@/components/product-catalog-options";
+import { localizedDescription } from "@/lib/i18n/localized";
+import { normalizeLocale } from "@/lib/i18n/config";
 
 type ProductPreviewModalProps = {
   product: Product | null;
@@ -15,6 +18,7 @@ type ProductPreviewModalProps = {
 export function ProductPreviewModal({ product, onClose }: ProductPreviewModalProps) {
   const t = useTranslations("adminProducts");
   const tStore = useTranslations("store");
+  const locale = normalizeLocale(useLocale());
   const images = product?.images ?? [];
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -95,7 +99,7 @@ export function ProductPreviewModal({ product, onClose }: ProductPreviewModalPro
             {imageUrl ? (
               <Image
                 src={imageUrl}
-                alt={product.name}
+                alt={product.name ?? ""}
                 fill
                 unoptimized
                 className="object-cover"
@@ -167,10 +171,19 @@ export function ProductPreviewModal({ product, onClose }: ProductPreviewModalPro
           </div>
 
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            {product.description?.trim()
-              ? product.description
-              : tStore("noDescription")}
+            {localizedDescription(product, locale) ?? tStore("noDescription")}
           </p>
+
+          <div className="mt-5">
+            <ProductCatalogOptions
+              product={product}
+              locale={locale}
+              categoryLabel={tStore("categoryLabel")}
+              genderLabel={tStore("genderLabel")}
+              colorLabel={tStore("colorLabel")}
+              sizeLabel={tStore("sizeLabel")}
+            />
+          </div>
 
           <p className="mt-4 text-xs text-muted">
             <span

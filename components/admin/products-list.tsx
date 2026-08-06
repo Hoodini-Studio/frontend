@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { ProductPreviewModal } from "@/components/admin/product-preview-modal";
@@ -13,6 +13,8 @@ import {
 import { formatEuroFromCents } from "@/lib/money";
 import { useToast } from "@/providers/toast-provider";
 import type { Product, ProductStatus } from "@/types/product";
+import { localizedName } from "@/lib/i18n/localized";
+import { normalizeLocale } from "@/lib/i18n/config";
 
 type PendingDelete = {
   id: string;
@@ -21,6 +23,7 @@ type PendingDelete = {
 
 export function ProductsList() {
   const t = useTranslations("adminProducts");
+  const locale = normalizeLocale(useLocale());
   const { toast } = useToast();
   const [status, setStatus] = useState<ProductStatus | "">("");
   const [search, setSearch] = useState("");
@@ -174,8 +177,22 @@ export function ProductsList() {
                         ) : null}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-medium text-foreground">{product.name}</p>
+                        <p className="font-medium text-foreground">
+                          {product.name}
+                        </p>
                         <p className="text-xs text-muted">{product.slug}</p>
+                        {(product.genders?.length || product.colors?.length) ? (
+                          <p className="mt-1 truncate text-xs text-muted">
+                            {[
+                              ...(product.genders ?? []).map((item) =>
+                                localizedName(item, locale),
+                              ),
+                              ...(product.colors ?? []).map((item) =>
+                                localizedName(item, locale),
+                              ),
+                            ].join(" · ")}
+                          </p>
+                        ) : null}
                       </div>
                     </button>
                   </td>
@@ -219,7 +236,10 @@ export function ProductsList() {
                         type="button"
                         disabled={deleteMutation.isPending}
                         onClick={() =>
-                          setPendingDelete({ id: product.id, name: product.name })
+                          setPendingDelete({
+                            id: product.id,
+                            name: product.name,
+                          })
                         }
                         className="text-red-300 transition hover:opacity-80 disabled:opacity-50"
                       >

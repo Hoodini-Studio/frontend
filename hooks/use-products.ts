@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import {
   createAdminProduct,
   deleteAdminProduct,
@@ -14,21 +14,23 @@ import {
   uploadAdminProductImages,
 } from "@/lib/api/products";
 import type { ProductInput, ProductStatus } from "@/types/product";
+import type { ProductSort, PublishedProductFilters } from "@/lib/api/products";
 
 export function usePublishedProducts(
-  filters: { search?: string; page?: number; perPage?: number } = {},
+  filters: Omit<PublishedProductFilters, "signal"> = {},
 ) {
   return useQuery({
     queryKey: ["products", "published", filters],
     queryFn: ({ signal }) =>
       listPublishedProducts({
-        search: filters.search,
-        page: filters.page,
-        perPage: filters.perPage,
+        ...filters,
         signal,
       }),
+    placeholderData: keepPreviousData,
   });
 }
+
+export type { ProductSort };
 
 export function usePublishedProduct(slug: string | undefined) {
   return useQuery({

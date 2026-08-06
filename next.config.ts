@@ -40,6 +40,11 @@ const nextConfig: NextConfig = {
         hostname: "127.0.0.1",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "media.smylecards.com",
+        pathname: "/**",
+      },
     ],
   },
 };

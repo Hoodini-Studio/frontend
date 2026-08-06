@@ -14,13 +14,42 @@ type ListProductsParams = {
   signal?: AbortSignal;
 };
 
-export function listPublishedProducts(
-  params: { search?: string; page?: number; perPage?: number; signal?: AbortSignal } = {},
-) {
+export type ProductSort = "newest" | "price_asc" | "price_desc";
+
+export type PublishedProductFilters = {
+  search?: string;
+  category?: string[];
+  color?: string[];
+  size?: string[];
+  gender?: string[];
+  sort?: ProductSort;
+  page?: number;
+  perPage?: number;
+  signal?: AbortSignal;
+};
+
+function setFacetParam(query: URLSearchParams, key: string, values?: string[]) {
+  if (!values?.length) {
+    return;
+  }
+
+  query.set(key, values.join(","));
+}
+
+export function listPublishedProducts(params: PublishedProductFilters = {}) {
   const query = new URLSearchParams();
 
   if (params.search?.trim()) {
     query.set("search", params.search.trim());
+  }
+
+  setFacetParam(query, "category", params.category);
+  setFacetParam(query, "color", params.color);
+  setFacetParam(query, "size", params.size);
+  setFacetParam(query, "gender", params.gender);
+
+  if (params.sort && params.sort !== "newest") {
+    query.set("sort", params.sort);
   }
 
   if (params.page && params.page > 1) {

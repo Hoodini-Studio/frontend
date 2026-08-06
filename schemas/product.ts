@@ -5,7 +5,8 @@ type Translator = (key: string) => string;
 export function createProductFormSchema(t: Translator) {
   return z.object({
     name: z.string().trim().min(1, t("nameRequired")),
-    description: z.string().optional(),
+    description_en: z.string().optional(),
+    description_sq: z.string().optional(),
   });
 }
 

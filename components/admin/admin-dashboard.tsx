@@ -124,6 +124,25 @@ export function AdminDashboard() {
           <ul className="mt-5 divide-y divide-white/10 border-y border-white/10">
             <li>
               <Link
+                href="/admin/catalog"
+                className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/[0.03] focus-visible:bg-white/[0.03] focus-visible:outline-none sm:px-6"
+              >
+                <div className="min-w-0">
+                  <p className="font-display text-lg font-semibold text-foreground">
+                    {t("catalog")}
+                  </p>
+                  <p className="mt-1 text-sm text-muted">{t("catalogDescription")}</p>
+                </div>
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 pt-1 text-muted transition group-hover:translate-x-0.5 group-hover:text-foreground"
+                >
+                  →
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/admin/users"
                 className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/[0.03] focus-visible:bg-white/[0.03] focus-visible:outline-none sm:px-6"
               >
