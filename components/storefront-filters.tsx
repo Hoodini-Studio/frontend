@@ -1,9 +1,15 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { FormEvent, KeyboardEvent, ReactNode } from "react";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { localizedName } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
+import {
+  appendPriceDigit,
+  formatPriceEntry,
+  removePriceDigit,
+} from "@/lib/money";
 import type {
   CatalogCategory,
   CatalogColor,
@@ -12,7 +18,7 @@ import type {
 } from "@/types/catalog";
 import type { StorefrontFilterState } from "@/hooks/use-storefront-filters";
 
-type FacetKey = keyof Omit<StorefrontFilterState, "sort">;
+type FacetKey = "category" | "color" | "size" | "gender";
 
 type StorefrontFiltersProps = {
   filters: StorefrontFilterState;
@@ -21,6 +27,7 @@ type StorefrontFiltersProps = {
   sizes: CatalogSize[];
   genders: CatalogGender[];
   onToggle: (facet: FacetKey, slug: string) => void;
+  onPriceChange: (priceMin: number | null, priceMax: number | null) => void;
   onClear: () => void;
   activeCount: number;
   className?: string;
@@ -33,6 +40,86 @@ function SectionLabel({ children }: { children: ReactNode }) {
   );
 }
 
+type PriceCentsInputProps = {
+  id: string;
+  value: number | null;
+  onChange: (cents: number | null) => void;
+  onCommit: () => void;
+  placeholder?: string;
+};
+
+function PriceCentsInput({
+  id,
+  value,
+  onChange,
+  onCommit,
+  placeholder = "00.00",
+}: PriceCentsInputProps) {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      onCommit();
+      return;
+    }
+
+    if (event.metaKey || event.ctrlKey || event.altKey) {
+      return;
+    }
+
+    if (event.key === "Backspace" || event.key === "Delete") {
+      event.preventDefault();
+      const next = removePriceDigit(value ?? 0);
+      onChange(next === 0 ? null : next);
+    }
+  };
+
+  const handleBeforeInput = (event: FormEvent<HTMLInputElement>) => {
+    const inputEvent = event.nativeEvent as InputEvent;
+    const data = inputEvent.data;
+
+    if (
+      inputEvent.inputType === "deleteContentBackward" ||
+      inputEvent.inputType === "deleteContentForward"
+    ) {
+      event.preventDefault();
+      const next = removePriceDigit(value ?? 0);
+      onChange(next === 0 ? null : next);
+      return;
+    }
+
+    if (data == null) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (/^\d$/.test(data)) {
+      onChange(appendPriceDigit(value ?? 0, Number(data)));
+    }
+  };
+
+  return (
+    <div className="relative min-w-0">
+      <input
+        id={id}
+        type="text"
+        inputMode="numeric"
+        autoComplete="off"
+        value={value !== null ? formatPriceEntry(value) : ""}
+        placeholder={placeholder}
+        onKeyDown={handleKeyDown}
+        onBeforeInput={handleBeforeInput}
+        onChange={() => {}}
+        onBlur={onCommit}
+        className="w-full min-w-0 border border-white/15 bg-transparent px-3 py-2 pr-8 font-mono text-sm tracking-wide text-foreground outline-none transition placeholder:text-muted/50 focus:border-white/40"
+      />
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
+        €
+      </span>
+    </div>
+  );
+}
+
 export function StorefrontFilters({
   filters,
   categories,
@@ -40,6 +127,7 @@ export function StorefrontFilters({
   sizes,
   genders,
   onToggle,
+  onPriceChange,
   onClear,
   activeCount,
   className = "",
@@ -47,6 +135,22 @@ export function StorefrontFilters({
 }: StorefrontFiltersProps) {
   const t = useTranslations("store");
   const locale = normalizeLocale(useLocale());
+  const [priceMinCents, setPriceMinCents] = useState<number | null>(filters.priceMin);
+  const [priceMaxCents, setPriceMaxCents] = useState<number | null>(filters.priceMax);
+  const [priceSyncedFrom, setPriceSyncedFrom] = useState(
+    `${filters.priceMin ?? ""}:${filters.priceMax ?? ""}`,
+  );
+  const priceExternalKey = `${filters.priceMin ?? ""}:${filters.priceMax ?? ""}`;
+
+  if (priceExternalKey !== priceSyncedFrom) {
+    setPriceSyncedFrom(priceExternalKey);
+    setPriceMinCents(filters.priceMin);
+    setPriceMaxCents(filters.priceMax);
+  }
+
+  const applyPriceRange = () => {
+    onPriceChange(priceMinCents, priceMaxCents);
+  };
 
   return (
     <div className={[className, !/\bgrid\b/.test(className) ? "space-y-8" : ""].filter(Boolean).join(" ")}>
@@ -193,6 +297,32 @@ export function StorefrontFilters({
           </div>
         </section>
       ) : null}
+
+      <section className="space-y-3">
+        <SectionLabel>{t("priceLabel")}</SectionLabel>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-x-3 gap-y-1.5">
+          <label htmlFor="price-min" className="text-xs text-muted">
+            {t("priceMin")}
+          </label>
+          <span aria-hidden="true" />
+          <label htmlFor="price-max" className="text-xs text-muted">
+            {t("priceMax")}
+          </label>
+          <PriceCentsInput
+            id="price-min"
+            value={priceMinCents}
+            onChange={setPriceMinCents}
+            onCommit={applyPriceRange}
+          />
+          <span className="pb-2 text-muted">–</span>
+          <PriceCentsInput
+            id="price-max"
+            value={priceMaxCents}
+            onChange={setPriceMaxCents}
+            onCommit={applyPriceRange}
+          />
+        </div>
+      </section>
     </div>
   );
 }

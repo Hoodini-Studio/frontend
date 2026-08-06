@@ -5,12 +5,17 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ProductSort } from "@/lib/api/products";
 
 export type StorefrontFilterState = {
+  search: string;
   category: string[];
   color: string[];
   size: string[];
   gender: string[];
+  priceMin: number | null;
+  priceMax: number | null;
   sort: ProductSort;
 };
+
+type FacetKey = "category" | "color" | "size" | "gender";
 
 const SORT_VALUES: ProductSort[] = ["newest", "price_asc", "price_desc"];
 
@@ -37,6 +42,24 @@ function parseSort(value: string | null): ProductSort {
   return "newest";
 }
 
+function parseEuroToCents(value: string | null): number | null {
+  if (!value?.trim()) {
+    return null;
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return null;
+  }
+
+  return Math.round(parsed * 100);
+}
+
+function centsToEuroParam(cents: number): string {
+  return (cents / 100).toString();
+}
+
 function toggleValue(values: string[], slug: string): string[] {
   return values.includes(slug)
     ? values.filter((value) => value !== slug)
@@ -46,6 +69,9 @@ function toggleValue(values: string[], slug: string): string[] {
 function buildSearchParams(state: StorefrontFilterState): string {
   const params = new URLSearchParams();
 
+  if (state.search.trim()) {
+    params.set("q", state.search.trim());
+  }
   if (state.category.length) {
     params.set("category", state.category.join(","));
   }
@@ -57,6 +83,12 @@ function buildSearchParams(state: StorefrontFilterState): string {
   }
   if (state.gender.length) {
     params.set("gender", state.gender.join(","));
+  }
+  if (state.priceMin !== null) {
+    params.set("price_min", centsToEuroParam(state.priceMin));
+  }
+  if (state.priceMax !== null) {
+    params.set("price_max", centsToEuroParam(state.priceMax));
   }
   if (state.sort !== "newest") {
     params.set("sort", state.sort);
@@ -72,10 +104,13 @@ export function useStorefrontFilters() {
 
   const filters = useMemo<StorefrontFilterState>(
     () => ({
+      search: searchParams.get("q")?.trim() ?? "",
       category: parseList(searchParams.get("category")),
       color: parseList(searchParams.get("color")),
       size: parseList(searchParams.get("size")),
       gender: parseList(searchParams.get("gender")),
+      priceMin: parseEuroToCents(searchParams.get("price_min")),
+      priceMax: parseEuroToCents(searchParams.get("price_max")),
       sort: parseSort(searchParams.get("sort")),
     }),
     [searchParams],
@@ -90,7 +125,7 @@ export function useStorefrontFilters() {
   );
 
   const toggleFacet = useCallback(
-    (facet: keyof Omit<StorefrontFilterState, "sort">, slug: string) => {
+    (facet: FacetKey, slug: string) => {
       replaceFilters({
         ...filters,
         [facet]: toggleValue(filters[facet], slug),
@@ -100,7 +135,7 @@ export function useStorefrontFilters() {
   );
 
   const removeFacet = useCallback(
-    (facet: keyof Omit<StorefrontFilterState, "sort">, slug: string) => {
+    (facet: FacetKey, slug: string) => {
       replaceFilters({
         ...filters,
         [facet]: filters[facet].filter((value) => value !== slug),
@@ -116,21 +151,40 @@ export function useStorefrontFilters() {
     [filters, replaceFilters],
   );
 
+  const setSearch = useCallback(
+    (search: string) => {
+      replaceFilters({ ...filters, search });
+    },
+    [filters, replaceFilters],
+  );
+
+  const setPriceRange = useCallback(
+    (priceMin: number | null, priceMax: number | null) => {
+      replaceFilters({ ...filters, priceMin, priceMax });
+    },
+    [filters, replaceFilters],
+  );
+
   const clearAll = useCallback(() => {
     replaceFilters({
+      search: "",
       category: [],
       color: [],
       size: [],
       gender: [],
+      priceMin: null,
+      priceMax: null,
       sort: filters.sort,
     });
   }, [filters.sort, replaceFilters]);
 
   const activeCount =
+    (filters.search ? 1 : 0) +
     filters.category.length +
     filters.color.length +
     filters.size.length +
-    filters.gender.length;
+    filters.gender.length +
+    (filters.priceMin !== null || filters.priceMax !== null ? 1 : 0);
 
   return {
     filters,
@@ -138,6 +192,8 @@ export function useStorefrontFilters() {
     toggleFacet,
     removeFacet,
     setSort,
+    setSearch,
+    setPriceRange,
     clearAll,
   };
 }

@@ -11,7 +11,7 @@ import type {
   CatalogSize,
 } from "@/types/catalog";
 
-type FacetKey = keyof Omit<StorefrontFilterState, "sort">;
+type FacetKey = "category" | "color" | "size" | "gender";
 
 type StorefrontFilterSheetProps = {
   open: boolean;
@@ -22,6 +22,7 @@ type StorefrontFilterSheetProps = {
   sizes: CatalogSize[];
   genders: CatalogGender[];
   onToggle: (facet: FacetKey, slug: string) => void;
+  onPriceChange: (priceMin: number | null, priceMax: number | null) => void;
   onClear: () => void;
   activeCount: number;
   resultCount: number;
@@ -39,6 +40,7 @@ export function StorefrontFilterSheet({
   sizes,
   genders,
   onToggle,
+  onPriceChange,
   onClear,
   activeCount,
   resultCount,
@@ -114,6 +116,7 @@ export function StorefrontFilterSheet({
           sizes={sizes}
           genders={genders}
           onToggle={onToggle}
+          onPriceChange={onPriceChange}
           onClear={onClear}
           activeCount={activeCount}
           showHeader={false}

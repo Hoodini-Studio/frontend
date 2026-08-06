@@ -225,10 +225,10 @@ export function ProductsList() {
                     </button>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-2">
                       <Link
                         href={`/admin/products/${product.id}/edit`}
-                        className="text-foreground transition hover:opacity-80"
+                        className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-muted transition hover:bg-white/5 hover:text-foreground"
                       >
                         {t("edit")}
                       </Link>
@@ -241,7 +241,7 @@ export function ProductsList() {
                             name: product.name,
                           })
                         }
-                        className="text-red-300 transition hover:opacity-80 disabled:opacity-50"
+                        className="rounded-lg border border-red-300/40 px-3 py-1.5 text-sm text-red-300 transition hover:bg-red-300/10 disabled:opacity-60"
                       >
                         {t("delete")}
                       </button>

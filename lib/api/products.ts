@@ -22,6 +22,8 @@ export type PublishedProductFilters = {
   color?: string[];
   size?: string[];
   gender?: string[];
+  priceMin?: number | null;
+  priceMax?: number | null;
   sort?: ProductSort;
   page?: number;
   perPage?: number;
@@ -47,6 +49,14 @@ export function listPublishedProducts(params: PublishedProductFilters = {}) {
   setFacetParam(query, "color", params.color);
   setFacetParam(query, "size", params.size);
   setFacetParam(query, "gender", params.gender);
+
+  if (params.priceMin != null) {
+    query.set("price_min", String(params.priceMin));
+  }
+
+  if (params.priceMax != null) {
+    query.set("price_max", String(params.priceMax));
+  }
 
   if (params.sort && params.sort !== "newest") {
     query.set("sort", params.sort);

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -36,8 +36,31 @@ function StorefrontCatalogContent() {
     toggleFacet,
     removeFacet,
     setSort,
+    setSearch,
+    setPriceRange,
     clearAll,
   } = useStorefrontFilters();
+
+  const [searchDraft, setSearchDraft] = useState(filters.search);
+  const [searchSyncedFrom, setSearchSyncedFrom] = useState(filters.search);
+
+  if (filters.search !== searchSyncedFrom) {
+    setSearchSyncedFrom(filters.search);
+    setSearchDraft(filters.search);
+  }
+
+  useEffect(() => {
+    const trimmed = searchDraft.trim();
+    if (trimmed === filters.search) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setSearch(searchDraft);
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [searchDraft, filters.search, setSearch]);
 
   const categoriesQuery = usePublicCategories();
   const colorsQuery = usePublicColors();
@@ -51,67 +74,96 @@ function StorefrontCatalogContent() {
 
   const { data, isLoading, isError, isFetching, isPlaceholderData } =
     usePublishedProducts({
-    category: filters.category,
-    color: filters.color,
-    size: filters.size,
-    gender: filters.gender,
-    sort: filters.sort,
-    perPage: HOME_PRODUCT_LIMIT,
-  });
+      search: filters.search || undefined,
+      category: filters.category,
+      color: filters.color,
+      size: filters.size,
+      gender: filters.gender,
+      priceMin: filters.priceMin,
+      priceMax: filters.priceMax,
+      sort: filters.sort,
+      perPage: HOME_PRODUCT_LIMIT,
+    });
 
   const products = data?.data ?? [];
   const total = data?.meta?.total ?? products.length;
-  const hasFacets =
-    categories.length > 0 ||
-    colors.length > 0 ||
-    sizes.length > 0 ||
-    genders.length > 0;
 
   const activeChips = useMemo(() => {
     const chips: {
-      facet: "category" | "color" | "size" | "gender";
-      slug: string;
+      key: string;
       label: string;
+      onRemove: () => void;
     }[] = [];
+
+    if (filters.search) {
+      chips.push({
+        key: `search-${filters.search}`,
+        label: t("searchChip", { query: filters.search }),
+        onRemove: () => setSearch(""),
+      });
+    }
+
+    if (filters.priceMin !== null || filters.priceMax !== null) {
+      const minLabel =
+        filters.priceMin !== null ? formatEuroFromCents(filters.priceMin) : "…";
+      const maxLabel =
+        filters.priceMax !== null ? formatEuroFromCents(filters.priceMax) : "…";
+      chips.push({
+        key: "price",
+        label: t("priceChip", { min: minLabel, max: maxLabel }),
+        onRemove: () => setPriceRange(null, null),
+      });
+    }
 
     for (const slug of filters.category) {
       const item = categories.find((entry) => entry.slug === slug);
       chips.push({
-        facet: "category",
-        slug,
+        key: `category-${slug}`,
         label: item ? localizedName(item, locale) : slug,
+        onRemove: () => removeFacet("category", slug),
       });
     }
 
     for (const slug of filters.gender) {
       const item = genders.find((entry) => entry.slug === slug);
       chips.push({
-        facet: "gender",
-        slug,
+        key: `gender-${slug}`,
         label: item ? localizedName(item, locale) : slug,
+        onRemove: () => removeFacet("gender", slug),
       });
     }
 
     for (const slug of filters.color) {
       const item = colors.find((entry) => entry.slug === slug);
       chips.push({
-        facet: "color",
-        slug,
+        key: `color-${slug}`,
         label: item ? localizedName(item, locale) : slug,
+        onRemove: () => removeFacet("color", slug),
       });
     }
 
     for (const slug of filters.size) {
       const item = sizes.find((entry) => entry.slug === slug);
       chips.push({
-        facet: "size",
-        slug,
+        key: `size-${slug}`,
         label: item?.name ?? slug,
+        onRemove: () => removeFacet("size", slug),
       });
     }
 
     return chips;
-  }, [filters, categories, colors, sizes, genders, locale]);
+  }, [
+    filters,
+    categories,
+    colors,
+    sizes,
+    genders,
+    locale,
+    removeFacet,
+    setPriceRange,
+    setSearch,
+    t,
+  ]);
 
   return (
     <div className="mx-auto min-h-[calc(100vh-4rem)] max-w-6xl px-6 py-12 sm:py-16">
@@ -123,19 +175,29 @@ function StorefrontCatalogContent() {
       </header>
 
       <div className="flex flex-wrap items-center gap-3 border-b border-white/10 pb-4">
-        {hasFacets ? (
-          <button
-            type="button"
-            aria-expanded={filtersOpen}
-            onClick={() => setFiltersOpen((open) => !open)}
-            className="inline-flex items-center gap-2 border border-white/20 px-3 py-2 text-sm text-foreground transition hover:border-white/40"
-          >
-            {filtersOpen ? t("closeFilters") : t("openFilters")}
-            {activeCount > 0 ? (
-              <span className="text-xs text-muted">({activeCount})</span>
-            ) : null}
-          </button>
-        ) : null}
+        <label className="sr-only" htmlFor="storefront-search">
+          {t("searchLabel")}
+        </label>
+        <input
+          id="storefront-search"
+          type="search"
+          value={searchDraft}
+          onChange={(event) => setSearchDraft(event.target.value)}
+          placeholder={t("searchPlaceholder")}
+          className="w-full max-w-xs border border-white/20 bg-transparent px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-white/40 sm:w-56"
+        />
+
+        <button
+          type="button"
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen((open) => !open)}
+          className="inline-flex items-center gap-2 border border-white/20 px-3 py-2 text-sm text-foreground transition hover:border-white/40"
+        >
+          {filtersOpen ? t("closeFilters") : t("openFilters")}
+          {activeCount > 0 ? (
+            <span className="text-xs text-muted">({activeCount})</span>
+          ) : null}
+        </button>
 
         <p className="text-sm text-muted">
           {isLoading ? tCommon("loading") : t("resultsCount", { count: total })}
@@ -161,7 +223,7 @@ function StorefrontCatalogContent() {
         </label>
       </div>
 
-      {hasFacets && filtersOpen ? (
+      {filtersOpen ? (
         <div className="mt-6 hidden border-b border-white/10 pb-8 lg:block animate-[fade-in-up_0.35s_ease-out]">
           <StorefrontFilters
             filters={filters}
@@ -170,6 +232,7 @@ function StorefrontCatalogContent() {
             sizes={sizes}
             genders={genders}
             onToggle={toggleFacet}
+            onPriceChange={setPriceRange}
             onClear={clearAll}
             activeCount={activeCount}
             showHeader={false}
@@ -181,10 +244,10 @@ function StorefrontCatalogContent() {
       {activeChips.length > 0 ? (
         <ul className="mt-4 flex flex-wrap gap-2">
           {activeChips.map((chip) => (
-            <li key={`${chip.facet}-${chip.slug}`}>
+            <li key={chip.key}>
               <button
                 type="button"
-                onClick={() => removeFacet(chip.facet, chip.slug)}
+                onClick={chip.onRemove}
                 className="inline-flex items-center gap-2 border border-white/20 px-3 py-1.5 text-xs text-foreground transition hover:border-white/40 animate-[fade-in-up_0.3s_ease-out]"
               >
                 <span>{chip.label}</span>
@@ -284,6 +347,7 @@ function StorefrontCatalogContent() {
         sizes={sizes}
         genders={genders}
         onToggle={toggleFacet}
+        onPriceChange={setPriceRange}
         onClear={clearAll}
         activeCount={activeCount}
         resultCount={total}

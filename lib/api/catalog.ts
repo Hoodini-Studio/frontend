@@ -47,6 +47,13 @@ export function deleteAdminCategory(id: string) {
   });
 }
 
+export function reorderAdminCategories(ids: string[]) {
+  return apiRequest<CategoryListResponse>("/api/admin/categories/reorder", {
+    method: "PATCH",
+    body: { ids },
+  });
+}
+
 export function listAdminColors(init?: { signal?: AbortSignal }) {
   return apiRequest<ColorListResponse>("/api/admin/colors", {
     signal: init?.signal,
@@ -77,6 +84,13 @@ export function deleteAdminColor(id: string) {
   return apiRequest<{ message: string }>(`/api/admin/colors/${id}`, {
     method: "DELETE",
     body: {},
+  });
+}
+
+export function reorderAdminColors(ids: string[]) {
+  return apiRequest<ColorListResponse>("/api/admin/colors/reorder", {
+    method: "PATCH",
+    body: { ids },
   });
 }
 
@@ -113,6 +127,13 @@ export function deleteAdminSize(id: string) {
   });
 }
 
+export function reorderAdminSizes(ids: string[]) {
+  return apiRequest<SizeListResponse>("/api/admin/sizes/reorder", {
+    method: "PATCH",
+    body: { ids },
+  });
+}
+
 export function listAdminGenders(init?: { signal?: AbortSignal }) {
   return apiRequest<GenderListResponse>("/api/admin/genders", {
     signal: init?.signal,
@@ -143,5 +164,12 @@ export function deleteAdminGender(id: string) {
   return apiRequest<{ message: string }>(`/api/admin/genders/${id}`, {
     method: "DELETE",
     body: {},
+  });
+}
+
+export function reorderAdminGenders(ids: string[]) {
+  return apiRequest<GenderListResponse>("/api/admin/genders/reorder", {
+    method: "PATCH",
+    body: { ids },
   });
 }

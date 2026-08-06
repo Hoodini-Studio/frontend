@@ -18,6 +18,10 @@ import {
   listPublicColors,
   listPublicGenders,
   listPublicSizes,
+  reorderAdminCategories,
+  reorderAdminColors,
+  reorderAdminGenders,
+  reorderAdminSizes,
   updateAdminCategory,
   updateAdminColor,
   updateAdminGender,
@@ -128,6 +132,15 @@ export function useDeleteCategoryMutation() {
   });
 }
 
+export function useReorderCategoriesMutation() {
+  const invalidate = useInvalidateCatalog();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => reorderAdminCategories(ids),
+    onSuccess: () => invalidate(),
+  });
+}
+
 export function useCreateColorMutation() {
   const invalidate = useInvalidateCatalog();
 
@@ -152,6 +165,15 @@ export function useDeleteColorMutation() {
 
   return useMutation({
     mutationFn: (id: string) => deleteAdminColor(id),
+    onSuccess: () => invalidate(),
+  });
+}
+
+export function useReorderColorsMutation() {
+  const invalidate = useInvalidateCatalog();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => reorderAdminColors(ids),
     onSuccess: () => invalidate(),
   });
 }
@@ -184,6 +206,15 @@ export function useDeleteSizeMutation() {
   });
 }
 
+export function useReorderSizesMutation() {
+  const invalidate = useInvalidateCatalog();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => reorderAdminSizes(ids),
+    onSuccess: () => invalidate(),
+  });
+}
+
 export function useCreateGenderMutation() {
   const invalidate = useInvalidateCatalog();
 
@@ -208,6 +239,15 @@ export function useDeleteGenderMutation() {
 
   return useMutation({
     mutationFn: (id: string) => deleteAdminGender(id),
+    onSuccess: () => invalidate(),
+  });
+}
+
+export function useReorderGendersMutation() {
+  const invalidate = useInvalidateCatalog();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => reorderAdminGenders(ids),
     onSuccess: () => invalidate(),
   });
 }
