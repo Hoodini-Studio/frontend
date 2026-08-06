@@ -143,8 +143,8 @@ export function ProductsList() {
         <div
           className={`overflow-x-auto rounded-2xl border border-white/10 ${isFetching ? "opacity-70" : ""}`}
         >
-          <table className="min-w-[40rem] w-full divide-y divide-white/10 text-left text-sm">
-            <thead className="bg-white/[0.03] text-muted">
+          <table className="min-w-160 w-full divide-y divide-white/10 text-left text-sm">
+            <thead className="bg-white/3 text-muted">
               <tr>
                 <th className="px-4 py-3 font-medium">{t("name")}</th>
                 <th className="px-4 py-3 font-medium">{t("price")}</th>
@@ -156,7 +156,7 @@ export function ProductsList() {
               {products.map((product) => (
                 <tr
                   key={product.id}
-                  className="bg-black/20 transition hover:bg-white/[0.03]"
+                  className="bg-black/20 transition hover:bg-white/3"
                 >
                   <td className="px-4 py-3">
                     <button
@@ -164,7 +164,7 @@ export function ProductsList() {
                       onClick={() => setPreviewProduct(product)}
                       className="flex w-full items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-white/25"
                     >
-                      <div className="relative h-12 w-10 shrink-0 overflow-hidden bg-white/[0.04]">
+                      <div className="relative h-12 w-10 shrink-0 overflow-hidden bg-white/4">
                         {product.primary_image_url ? (
                           <Image
                             src={product.primary_image_url}

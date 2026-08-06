@@ -73,7 +73,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
         {product ? (
           <article className="grid gap-10 lg:grid-cols-2">
             <div className="space-y-4">
-              <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-white/[0.07] to-white/[0.02]">
+              <div className="relative aspect-4/5 overflow-hidden bg-linear-to-b from-white/7 to-white/2">
                 {mainImageUrl ? (
                   <Image
                     src={mainImageUrl}
