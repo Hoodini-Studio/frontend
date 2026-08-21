@@ -124,3 +124,70 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   return payload as T;
 }
+
+function filenameFromDisposition(header: string | null, fallback: string): string {
+  if (!header) {
+    return fallback;
+  }
+
+  const utfMatch = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utfMatch?.[1]) {
+    return decodeURIComponent(utfMatch[1].trim());
+  }
+
+  const match = header.match(/filename="?([^"]+)"?/i);
+  return match?.[1]?.trim() || fallback;
+}
+
+export async function apiDownloadFile(
+  path: string,
+  fallbackFilename: string,
+  options: { signal?: AbortSignal; timeoutMs?: number } = {},
+): Promise<void> {
+  const { signal, timeoutMs = 30_000 } = options;
+  const requestHeaders = new Headers();
+  requestHeaders.set("Accept", "text/csv, application/json");
+
+  const locale = getCookie(LOCALE_COOKIE);
+  if (locale) {
+    requestHeaders.set("X-Locale", locale);
+  }
+
+  const xsrfToken = getCookie("XSRF-TOKEN");
+  if (xsrfToken) {
+    requestHeaders.set("X-XSRF-TOKEN", xsrfToken);
+  }
+
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+  const fetchSignal = signal ? combineSignals(signal, timeoutSignal) : timeoutSignal;
+
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "GET",
+    signal: fetchSignal,
+    credentials: "include",
+    headers: requestHeaders,
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new ApiError(
+      payload?.message ?? "Request failed",
+      response.status,
+      payload?.errors ?? {},
+    );
+  }
+
+  const blob = await response.blob();
+  const filename = filenameFromDisposition(
+    response.headers.get("Content-Disposition"),
+    fallbackFilename,
+  );
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(objectUrl);
+}

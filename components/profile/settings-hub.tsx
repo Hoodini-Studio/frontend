@@ -40,6 +40,11 @@ export function SettingsHub() {
     ...(!isAdmin(user)
       ? [
           {
+            href: "/account-settings/emails",
+            title: t("hubEmails"),
+            hint: t("hubEmailsHint"),
+          },
+          {
             href: "/account-settings/address",
             title: t("hubAddress"),
             hint: addressHint || t("hubAddressEmpty"),

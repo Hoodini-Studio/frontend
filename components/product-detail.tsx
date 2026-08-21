@@ -182,9 +182,10 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                     alt={product.name ?? ""}
                     fill
                     unoptimized
+                    loading="eager"
+                    fetchPriority="high"
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 50vw"
-                    priority
                   />
                 ) : null}
 
@@ -236,6 +237,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                           alt=""
                           fill
                           unoptimized
+                          loading={image.url === mainImageUrl ? "eager" : "lazy"}
                           className="object-cover"
                           sizes="120px"
                         />

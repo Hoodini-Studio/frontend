@@ -43,6 +43,9 @@ export const API_MESSAGE_KEYS = {
   "Coupon usage limit reached.": "couponUsageLimit",
   "Max uses per user exceeded.": "couponUserLimit",
   "Cart subtotal too low.": "couponSubtotalTooLow",
+
+  "If that email is valid, it is subscribed to the newsletter.": "newsletterSubscribed",
+  "You have been unsubscribed from the newsletter.": "newsletterUnsubscribed",
 } as const;
 
 export type ApiMessageKey = (typeof API_MESSAGE_KEYS)[keyof typeof API_MESSAGE_KEYS];

@@ -1,8 +1,8 @@
-export const locales = ["sq", "en"] as const;
+export const locales = ["en", "sq"] as const;
 
 export type AppLocale = (typeof locales)[number];
 
-export const defaultLocale: AppLocale = "sq";
+export const defaultLocale: AppLocale = "en";
 
 export const LOCALE_COOKIE = "locale";
 

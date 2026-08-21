@@ -10,6 +10,7 @@ import {
   register,
   resendVerification,
   resetPassword,
+  updateEmailPreferences,
   updatePreferredLocale,
 } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
@@ -22,6 +23,7 @@ import type {
   ResendVerificationInput,
   ResetPasswordInput,
 } from "@/schemas/auth";
+import type { EmailPreferencesInput } from "@/types/user";
 
 export function useCurrentUser() {
   return useQuery({
@@ -98,6 +100,17 @@ export function useUpdatePreferredLocaleMutation() {
 
   return useMutation({
     mutationFn: (locale: AppLocale) => updatePreferredLocale(locale),
+    onSuccess: (response) => {
+      queryClient.setQueryData(["auth", "user"], response.data);
+    },
+  });
+}
+
+export function useUpdateEmailPreferencesMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: EmailPreferencesInput) => updateEmailPreferences(payload),
     onSuccess: (response) => {
       queryClient.setQueryData(["auth", "user"], response.data);
     },

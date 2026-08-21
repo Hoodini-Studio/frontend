@@ -8,7 +8,7 @@ import type {
   ResetPasswordInput,
 } from "@/schemas/auth";
 import type { AppLocale } from "@/lib/i18n/config";
-import type { AuthResponse } from "@/types/user";
+import type { AuthResponse, EmailPreferencesInput } from "@/types/user";
 
 export type RegisterResponse = AuthResponse & {
   message: string;
@@ -64,6 +64,13 @@ export function updatePreferredLocale(preferred_locale: AppLocale) {
   return apiRequest<AuthResponse>("/api/auth/preferred-locale", {
     method: "PATCH",
     body: { preferred_locale },
+  });
+}
+
+export function updateEmailPreferences(payload: EmailPreferencesInput) {
+  return apiRequest<AuthResponse>("/api/auth/email-preferences", {
+    method: "PATCH",
+    body: payload,
   });
 }
 

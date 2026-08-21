@@ -250,6 +250,25 @@ export function AdminDashboard() {
             </li>
             <li>
               <Link
+                href="/admin/newsletter"
+                className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/3 focus-visible:bg-white/3 focus-visible:outline-none sm:px-6"
+              >
+                <div className="min-w-0">
+                  <p className="font-display text-lg font-semibold text-foreground">
+                    {t("newsletter")}
+                  </p>
+                  <p className="mt-1 text-sm text-muted">{t("newsletterDescription")}</p>
+                </div>
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 pt-1 text-muted transition group-hover:translate-x-0.5 group-hover:text-foreground"
+                >
+                  →
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/admin/users"
                 className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/3 focus-visible:bg-white/3 focus-visible:outline-none sm:px-6"
               >

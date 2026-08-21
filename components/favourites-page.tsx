@@ -61,7 +61,8 @@ export function FavouritesPageContent() {
                         alt={product.name ?? ""}
                         fill
                         unoptimized
-                        priority={index < 3}
+                        loading={index < 3 ? "eager" : "lazy"}
+                        fetchPriority={index === 0 ? "high" : "auto"}
                         className="object-cover transition duration-300 group-hover:scale-[1.02]"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
