@@ -53,6 +53,7 @@ export function useLoginMutation() {
     onSuccess: (response) => {
       queryClient.setQueryData(["auth", "user"], response.data);
       void queryClient.invalidateQueries({ queryKey: ["cart"] });
+      void queryClient.invalidateQueries({ queryKey: ["favourites"] });
     },
   });
 }

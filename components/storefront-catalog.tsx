@@ -19,6 +19,9 @@ import { localizedName } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { ProductGridSkeleton } from "@/components/ui/product-grid-skeleton";
 import { SkeletonBlock } from "@/components/ui/skeleton-block";
+import { FavouriteButton } from "@/components/favourite-button";
+import { isAdmin } from "@/lib/auth/roles";
+import { useCurrentUser } from "@/hooks/use-auth";
 
 const HOME_PRODUCT_LIMIT = 48;
 const EMPTY_CATEGORIES: never[] = [];
@@ -30,6 +33,8 @@ function StorefrontCatalogContent() {
   const t = useTranslations("store");
   const tCommon = useTranslations("common");
   const locale = normalizeLocale(useLocale());
+  const { data: user } = useCurrentUser();
+  const showFavourites = !isAdmin(user);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const {
@@ -302,7 +307,7 @@ function StorefrontCatalogContent() {
           }`}
         >
           {products.map((product, index) => (
-            <li key={product.id}>
+            <li key={product.id} className="relative">
               <Link
                 href={`/products/${product.slug}`}
                 className="group block outline-none focus-visible:ring-2 focus-visible:ring-white/30"
@@ -349,6 +354,13 @@ function StorefrontCatalogContent() {
                   </p>
                 ) : null}
               </Link>
+              {showFavourites ? (
+                <FavouriteButton
+                  productId={product.id}
+                  stopPropagation
+                  className="absolute right-3 top-3 z-10 h-9 w-9"
+                />
+              ) : null}
             </li>
           ))}
         </ul>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-commerce";
+import { useFavouriteIds } from "@/hooks/use-favourites";
 import { UserMenu } from "@/components/layout/user-menu";
 import { getHomePathForUser, isAdmin } from "@/lib/auth/roles";
 
@@ -29,13 +30,35 @@ function CartIcon({ className }: { className?: string }) {
   );
 }
 
+function HeartIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M19.5 12.572 12 20l-7.5-7.428A5 5 0 1 1 12 6.012a5 5 0 1 1 7.5 6.56Z" />
+    </svg>
+  );
+}
+
 export function SiteHeader() {
   const t = useTranslations("common");
   const { data: user, isLoading } = useCurrentUser();
-  const showCart = !isAdmin(user);
-  const cartQuery = useCart({ enabled: showCart && !isLoading });
+  const showStoreIcons = !isAdmin(user);
+  const cartQuery = useCart({ enabled: showStoreIcons && !isLoading });
+  const favouritesQuery = useFavouriteIds({
+    enabled: showStoreIcons && !isLoading,
+  });
   const homePath = getHomePathForUser(user);
   const cartCount = cartQuery.data?.item_count ?? 0;
+  const favouritesCount = favouritesQuery.data?.length ?? 0;
   const previousCountRef = useRef<number | null>(null);
   const [badgeBumping, setBadgeBumping] = useState(false);
 
@@ -68,24 +91,38 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-4 text-sm">
-          {showCart ? (
-            <Link
-              href="/cart"
-              aria-label={t("cart")}
-              className="relative text-muted transition hover:text-foreground"
-            >
-              <CartIcon className="h-5 w-5" />
-              {cartCount > 0 ? (
-                <span
-                  className={`absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium text-background ${
-                    badgeBumping ? "cart-badge-bump" : ""
-                  }`}
-                  onAnimationEnd={() => setBadgeBumping(false)}
-                >
-                  {cartCount > 99 ? "99+" : cartCount}
-                </span>
-              ) : null}
-            </Link>
+          {showStoreIcons ? (
+            <>
+              <Link
+                href="/favourites"
+                aria-label={t("favourites")}
+                className="relative text-muted transition hover:text-foreground"
+              >
+                <HeartIcon className="h-5 w-5" />
+                {favouritesCount > 0 ? (
+                  <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium text-background">
+                    {favouritesCount > 99 ? "99+" : favouritesCount}
+                  </span>
+                ) : null}
+              </Link>
+              <Link
+                href="/cart"
+                aria-label={t("cart")}
+                className="relative text-muted transition hover:text-foreground"
+              >
+                <CartIcon className="h-5 w-5" />
+                {cartCount > 0 ? (
+                  <span
+                    className={`absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium text-background ${
+                      badgeBumping ? "cart-badge-bump" : ""
+                    }`}
+                    onAnimationEnd={() => setBadgeBumping(false)}
+                  >
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                ) : null}
+              </Link>
+            </>
           ) : null}
           {isLoading ? (
             <div

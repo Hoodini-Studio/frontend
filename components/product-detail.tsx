@@ -12,6 +12,9 @@ import { localizedDescription } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { useToast } from "@/providers/toast-provider";
 import { ProductDetailSkeleton } from "@/components/ui/product-detail-skeleton";
+import { FavouriteButton } from "@/components/favourite-button";
+import { isAdmin } from "@/lib/auth/roles";
+import { useCurrentUser } from "@/hooks/use-auth";
 
 type ProductDetailProps = {
   slug: string;
@@ -21,6 +24,8 @@ export function ProductDetail({ slug }: ProductDetailProps) {
   const t = useTranslations("store");
   const locale = normalizeLocale(useLocale());
   const { toast } = useToast();
+  const { data: user } = useCurrentUser();
+  const showFavourites = !isAdmin(user);
   const { data, isLoading, isError } = usePublishedProduct(slug);
   const product = data?.data;
   const [activeIndex, setActiveIndex] = useState(0);
@@ -180,6 +185,13 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     priority
+                  />
+                ) : null}
+
+                {showFavourites ? (
+                  <FavouriteButton
+                    productId={product.id}
+                    className="absolute right-3 top-3 z-20 h-10 w-10"
                   />
                 ) : null}
 
