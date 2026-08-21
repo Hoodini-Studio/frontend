@@ -61,7 +61,7 @@ export function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
           <h1 className="font-display text-3xl font-semibold text-foreground print:text-black">
             {order.number}
           </h1>
-          <p className="text-sm text-muted print:text-[10px] print:text-black/70">
+          <p className="text-sm text-muted print:hidden">
             {t(`status_${order.status}`)} · {t(`payment_${order.payment_status}`)} ·{" "}
             {t(`payment_${order.payment_method}`)}
           </p>
