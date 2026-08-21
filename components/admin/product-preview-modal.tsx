@@ -95,7 +95,7 @@ export function ProductPreviewModal({ product, onClose }: ProductPreviewModalPro
         </div>
 
         <div className="p-5 sm:p-6">
-          <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-white/[0.07] to-white/[0.02]">
+          <div className="relative aspect-4/5 overflow-hidden bg-linear-to-b from-white/7 to-white/2">
             {imageUrl ? (
               <Image
                 src={imageUrl}

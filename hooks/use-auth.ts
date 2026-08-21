@@ -52,6 +52,7 @@ export function useLoginMutation() {
     mutationFn: (credentials: LoginInput) => login(credentials),
     onSuccess: (response) => {
       queryClient.setQueryData(["auth", "user"], response.data);
+      void queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
   });
 }

@@ -2,18 +2,29 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useAdminOrders } from "@/hooks/use-commerce";
 import { useAdminProducts } from "@/hooks/use-products";
+import { SkeletonBlock } from "@/components/ui/skeleton-block";
 
 export function AdminDashboard() {
   const t = useTranslations("admin");
   const all = useAdminProducts({ perPage: 1 });
   const published = useAdminProducts({ status: "published", perPage: 1 });
   const drafts = useAdminProducts({ status: "draft", perPage: 1 });
+  const allOrders = useAdminOrders({ per_page: 1 });
+  const pendingOrders = useAdminOrders({ status: "pending", per_page: 1 });
+  const confirmedOrders = useAdminOrders({ status: "confirmed", per_page: 1 });
 
   const total = all.data?.meta?.total;
   const publishedCount = published.data?.meta?.total;
   const draftCount = drafts.data?.meta?.total;
   const countsLoading = all.isLoading || published.isLoading || drafts.isLoading;
+
+  const ordersTotal = allOrders.data?.meta?.total;
+  const pendingCount = pendingOrders.data?.meta?.total;
+  const confirmedCount = confirmedOrders.data?.meta?.total;
+  const ordersCountsLoading =
+    allOrders.isLoading || pendingOrders.isLoading || confirmedOrders.isLoading;
 
   return (
     <main className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden">
@@ -36,15 +47,13 @@ export function AdminDashboard() {
           </p>
         </header>
 
-        <section
-          aria-labelledby="admin-catalog-heading"
-          className="mt-14 animate-[fade-in-up_0.7s_ease-out] [animation-delay:120ms] [animation-fill-mode:both]"
-        >
+        <section className="mt-14 animate-[fade-in-up_0.7s_ease-out] [animation-delay:120ms] [animation-fill-mode:both]">
           <Link
             href="/admin/products"
+            aria-labelledby="admin-catalog-heading"
             className="group block outline-none transition focus-visible:ring-2 focus-visible:ring-white/25"
           >
-            <div className="relative overflow-hidden border-y border-white/10 bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent px-4 py-8 transition group-hover:from-white/[0.09] sm:px-6 sm:py-10">
+            <div className="relative overflow-hidden border-t border-white/10 bg-linear-to-br from-white/6 via-white/2 to-transparent px-4 py-8 transition group-hover:from-white/9 sm:px-6 sm:py-10">
               <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0 max-w-xl">
                   <h2
@@ -59,7 +68,11 @@ export function AdminDashboard() {
 
                   <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
                     {countsLoading ? (
-                      <span>{t("loadingCounts")}</span>
+                      <div className="flex gap-4">
+                        <SkeletonBlock className="h-4 w-16" />
+                        <SkeletonBlock className="h-4 w-20" />
+                        <SkeletonBlock className="h-4 w-16" />
+                      </div>
                     ) : (
                       <>
                         <span>
@@ -100,14 +113,70 @@ export function AdminDashboard() {
             </div>
           </Link>
 
-          <div className="mt-4">
-            <Link
-              href="/admin/products/new"
-              className="inline-flex text-sm text-muted transition hover:text-foreground"
-            >
-              {t("newProduct")}
-            </Link>
-          </div>
+          <Link
+            href="/admin/orders"
+            aria-labelledby="admin-orders-heading"
+            className="group block outline-none transition focus-visible:ring-2 focus-visible:ring-white/25"
+          >
+            <div className="relative overflow-hidden border-y border-white/10 bg-linear-to-br from-white/6 via-white/2 to-transparent px-4 py-8 transition group-hover:from-white/9 sm:px-6 sm:py-10">
+              <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0 max-w-xl">
+                  <h2
+                    id="admin-orders-heading"
+                    className="font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+                  >
+                    {t("orders")}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
+                    {t("ordersDescription")}
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
+                    {ordersCountsLoading ? (
+                      <div className="flex gap-4">
+                        <SkeletonBlock className="h-4 w-16" />
+                        <SkeletonBlock className="h-4 w-20" />
+                        <SkeletonBlock className="h-4 w-20" />
+                      </div>
+                    ) : (
+                      <>
+                        <span>
+                          <span className="font-medium text-foreground">{ordersTotal ?? 0}</span>
+                          {" "}
+                          {t("totalLabel")}
+                        </span>
+                        <span className="text-white/20" aria-hidden="true">
+                          /
+                        </span>
+                        <span>
+                          <span className="font-medium text-amber-200/90">
+                            {pendingCount ?? 0}
+                          </span>
+                          {" "}
+                          {t("pendingLabel")}
+                        </span>
+                        <span className="text-white/20" aria-hidden="true">
+                          /
+                        </span>
+                        <span>
+                          <span className="font-medium text-emerald-300/90">
+                            {confirmedCount ?? 0}
+                          </span>
+                          {" "}
+                          {t("confirmedLabel")}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground transition group-hover:gap-3">
+                  {t("openOrders")}
+                  <span aria-hidden="true">→</span>
+                </span>
+              </div>
+            </div>
+          </Link>
         </section>
 
         <section
@@ -125,7 +194,7 @@ export function AdminDashboard() {
             <li>
               <Link
                 href="/admin/catalog"
-                className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/[0.03] focus-visible:bg-white/[0.03] focus-visible:outline-none sm:px-6"
+                className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/3 focus-visible:bg-white/3 focus-visible:outline-none sm:px-6"
               >
                 <div className="min-w-0">
                   <p className="font-display text-lg font-semibold text-foreground">
@@ -143,8 +212,27 @@ export function AdminDashboard() {
             </li>
             <li>
               <Link
+                href="/admin/shipping"
+                className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/3 focus-visible:bg-white/3 focus-visible:outline-none sm:px-6"
+              >
+                <div className="min-w-0">
+                  <p className="font-display text-lg font-semibold text-foreground">
+                    {t("shipping")}
+                  </p>
+                  <p className="mt-1 text-sm text-muted">{t("shippingDescription")}</p>
+                </div>
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 pt-1 text-muted transition group-hover:translate-x-0.5 group-hover:text-foreground"
+                >
+                  →
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/admin/users"
-                className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/[0.03] focus-visible:bg-white/[0.03] focus-visible:outline-none sm:px-6"
+                className="group flex items-start justify-between gap-6 px-4 py-5 transition hover:bg-white/3 focus-visible:bg-white/3 focus-visible:outline-none sm:px-6"
               >
                 <div className="min-w-0">
                   <p className="font-display text-lg font-semibold text-foreground">
@@ -159,17 +247,6 @@ export function AdminDashboard() {
                   →
                 </span>
               </Link>
-            </li>
-            <li className="flex items-start justify-between gap-6 px-4 py-5 opacity-60 sm:px-6">
-              <div className="min-w-0">
-                <p className="font-display text-lg font-semibold text-foreground">
-                  {t("orders")}
-                </p>
-                <p className="mt-1 text-sm text-muted">{t("ordersDescription")}</p>
-              </div>
-              <span className="shrink-0 pt-1 text-[10px] uppercase tracking-[0.2em] text-muted">
-                {t("soon")}
-              </span>
             </li>
           </ul>
         </section>

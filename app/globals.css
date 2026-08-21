@@ -37,6 +37,29 @@
   select:disabled {
     cursor: not-allowed;
   }
+
+  /*
+   * iOS Safari zooms focused fields when computed font-size is under 16px.
+   * Force 16px on small screens so text-sm inputs don't trigger zoom.
+   */
+  @media (max-width: 640px) {
+    input:not(
+      [type="button"],
+      [type="submit"],
+      [type="reset"],
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"],
+      [type="image"],
+      [type="range"],
+      [type="color"],
+      [type="hidden"]
+    ),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
 }
 
 @keyframes fade-in-up {
@@ -199,5 +222,43 @@ body {
 
   .spotlight-beam.is-animating {
     will-change: auto;
+  }
+}
+
+@media print {
+  @page {
+    size: 100mm 148mm;
+    margin: 8mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .order-print-sheet {
+    width: 100%;
+    max-width: 84mm;
+    margin: 0;
+    break-inside: avoid;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .order-print-sheet h1 {
+    font-size: 16px !important;
+    line-height: 1.2 !important;
+  }
+
+  .order-print-sheet h2 {
+    font-size: 9px !important;
+    letter-spacing: 0.12em !important;
   }
 }

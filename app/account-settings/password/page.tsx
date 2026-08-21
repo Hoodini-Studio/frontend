@@ -1,0 +1,10 @@
+import type { Metadata } from "next";
+import { ChangePasswordForm } from "@/components/profile/change-password-form";
+
+export const metadata: Metadata = {
+  title: "Change password",
+};
+
+export default function AccountPasswordPage() {
+  return <ChangePasswordForm />;
+}

@@ -3,12 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import { use, useMemo, useState } from "react";
+import { use, useMemo, useRef, useState } from "react";
 import { usePublishedProduct } from "@/hooks/use-products";
+import { useAddCartItemMutation } from "@/hooks/use-commerce";
 import { formatEuroFromCents } from "@/lib/money";
 import { ProductCatalogOptions } from "@/components/product-catalog-options";
 import { localizedDescription } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
+import { useToast } from "@/providers/toast-provider";
+import { ProductDetailSkeleton } from "@/components/ui/product-detail-skeleton";
 
 type ProductDetailProps = {
   slug: string;
@@ -16,13 +19,31 @@ type ProductDetailProps = {
 
 export function ProductDetail({ slug }: ProductDetailProps) {
   const t = useTranslations("store");
-  const tCommon = useTranslations("common");
   const locale = normalizeLocale(useLocale());
+  const { toast } = useToast();
   const { data, isLoading, isError } = usePublishedProduct(slug);
   const product = data?.data;
   const [activeIndex, setActiveIndex] = useState(0);
+  const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
+  const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
+  const [needsColor, setNeedsColor] = useState(false);
+  const [needsSize, setNeedsSize] = useState(false);
+  const [optionsSyncedFor, setOptionsSyncedFor] = useState<string | null>(null);
+  const colorSectionRef = useRef<HTMLDivElement | null>(null);
+  const sizeSectionRef = useRef<HTMLDivElement | null>(null);
+  const addToCart = useAddCartItemMutation();
 
   const images = product?.images ?? [];
+  const colors = product?.colors ?? [];
+  const sizes = product?.sizes ?? [];
+
+  if (product && product.id !== optionsSyncedFor) {
+    setOptionsSyncedFor(product.id);
+    setSelectedColorId(colors.length === 1 ? colors[0].id : null);
+    setSelectedSizeId(sizes.length === 1 ? sizes[0].id : null);
+    setNeedsColor(false);
+    setNeedsSize(false);
+  }
 
   const resolvedIndex = useMemo(() => {
     if (images.length === 0) {
@@ -34,6 +55,24 @@ export function ProductDetail({ slug }: ProductDetailProps) {
 
   const mainImageUrl = images[resolvedIndex]?.url ?? product?.primary_image_url ?? null;
   const canNavigate = images.length > 1;
+  const selectionIncomplete = needsColor || needsSize;
+
+  const guidanceMessage = (() => {
+    const missing = [
+      needsColor ? t("colorLabel") : null,
+      needsSize ? t("sizeLabel") : null,
+    ].filter((label): label is string => Boolean(label));
+
+    if (missing.length === 0) {
+      return null;
+    }
+
+    if (missing.length === 1) {
+      return t("selectOneOption", { option: missing[0] });
+    }
+
+    return t("selectMultipleOptions", { options: missing.join(", ") });
+  })();
 
   const showPrevious = () => {
     setActiveIndex((current) => (current - 1 + images.length) % images.length);
@@ -41,6 +80,38 @@ export function ProductDetail({ slug }: ProductDetailProps) {
 
   const showNext = () => {
     setActiveIndex((current) => (current + 1) % images.length);
+  };
+
+  const handleAddToCart = () => {
+    if (!product) {
+      return;
+    }
+
+    const missingColor = colors.length > 0 && !selectedColorId;
+    const missingSize = sizes.length > 0 && !selectedSizeId;
+
+    if (missingColor || missingSize) {
+      setNeedsColor(missingColor);
+      setNeedsSize(missingSize);
+
+      const target = missingColor
+        ? colorSectionRef.current
+        : sizeSectionRef.current;
+      target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return;
+    }
+
+    setNeedsColor(false);
+    setNeedsSize(false);
+    void addToCart
+      .mutateAsync({
+        product_id: product.id,
+        quantity: 1,
+        color_id: selectedColorId,
+        size_id: selectedSizeId,
+      })
+      .then(() => toast(t("addedToCart")))
+      .catch(() => toast(t("unableToAddToCart"), { variant: "error" }));
   };
 
   return (
@@ -53,7 +124,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
       </Link>
 
       <div className="mt-8">
-        {isLoading ? <p className="text-sm text-muted">{tCommon("loading")}</p> : null}
+        {isLoading ? <ProductDetailSkeleton /> : null}
 
         {isError || (!isLoading && !product) ? (
           <div className="max-w-md">
@@ -94,9 +165,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                       aria-label={t("previousImage")}
                       className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-white/15 bg-black/55 text-foreground backdrop-blur-sm transition hover:bg-black/75"
                     >
-                      <span aria-hidden className="text-lg leading-none">
-                        ‹
-                      </span>
+                      ‹
                     </button>
                     <button
                       type="button"
@@ -104,29 +173,24 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                       aria-label={t("nextImage")}
                       className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-white/15 bg-black/55 text-foreground backdrop-blur-sm transition hover:bg-black/75"
                     >
-                      <span aria-hidden className="text-lg leading-none">
-                        ›
-                      </span>
+                      ›
                     </button>
-                    <p className="absolute bottom-3 right-3 bg-black/55 px-2 py-1 text-xs text-foreground backdrop-blur-sm">
-                      {resolvedIndex + 1} / {images.length}
-                    </p>
                   </>
                 ) : null}
               </div>
 
-              {canNavigate ? (
-                <ul className="grid grid-cols-4 gap-3">
+              {images.length > 1 ? (
+                <ul className="grid grid-cols-4 gap-2 sm:grid-cols-5">
                   {images.map((image, index) => (
                     <li key={image.id}>
                       <button
                         type="button"
                         onClick={() => setActiveIndex(index)}
-                        aria-label={t("imageThumb", { index: index + 1 })}
-                        className={`relative aspect-square w-full overflow-hidden outline-none transition ${
-                          resolvedIndex === index
-                            ? "ring-2 ring-white/40"
-                            : "opacity-70 hover:opacity-100"
+                        aria-label={t("viewImage", { index: index + 1 })}
+                        className={`relative aspect-square overflow-hidden border transition ${
+                          index === resolvedIndex
+                            ? "border-white/40"
+                            : "border-white/10 hover:border-white/25"
                         }`}
                       >
                         <Image
@@ -161,8 +225,47 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                   genderLabel={t("genderLabel")}
                   colorLabel={t("colorLabel")}
                   sizeLabel={t("sizeLabel")}
+                  selectable
+                  selectedColorId={selectedColorId}
+                  selectedSizeId={selectedSizeId}
+                  emphasizeColor={needsColor}
+                  emphasizeSize={needsSize}
+                  colorSectionRef={colorSectionRef}
+                  sizeSectionRef={sizeSectionRef}
+                  onSelectColor={(id) => {
+                    setSelectedColorId(id);
+                    setNeedsColor(false);
+                    if (selectionIncomplete && sizes.length > 0 && !selectedSizeId) {
+                      setNeedsSize(true);
+                    }
+                  }}
+                  onSelectSize={(id) => {
+                    setSelectedSizeId(id);
+                    setNeedsSize(false);
+                    if (selectionIncomplete && colors.length > 0 && !selectedColorId) {
+                      setNeedsColor(true);
+                    }
+                  }}
                 />
               </div>
+
+              {guidanceMessage ? (
+                <p
+                  role="status"
+                  className="mt-5 text-sm text-foreground animate-[fade-in-up_0.25s_ease-out]"
+                >
+                  {guidanceMessage}
+                </p>
+              ) : null}
+
+              <button
+                type="button"
+                disabled={addToCart.isPending}
+                onClick={handleAddToCart}
+                className="mt-8 w-full rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+              >
+                {addToCart.isPending ? t("addingToCart") : t("addToCart")}
+              </button>
 
               {localizedDescription(product, locale) ? (
                 <p className="mt-8 whitespace-pre-wrap text-base leading-relaxed text-muted">

@@ -142,7 +142,16 @@ export function UserMenu({ user }: UserMenuProps) {
             >
               {t("dashboard")}
             </Link>
-          ) : null}
+          ) : (
+            <Link
+              href="/orders"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm text-foreground transition hover:bg-white/5"
+            >
+              {t("myOrders")}
+            </Link>
+          )}
 
           <Link
             href="/account-settings"

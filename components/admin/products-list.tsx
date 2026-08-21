@@ -15,6 +15,7 @@ import { useToast } from "@/providers/toast-provider";
 import type { Product, ProductStatus } from "@/types/product";
 import { localizedName } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 
 type PendingDelete = {
   id: string;
@@ -125,9 +126,7 @@ export function ProductsList() {
         </Link>
       </div>
 
-      {isLoading ? (
-        <p className="text-sm text-muted">{t("loading")}</p>
-      ) : null}
+      {isLoading ? <TableSkeleton rows={6} columns={4} /> : null}
 
       {isError ? (
         <p className="text-sm text-red-300">{t("unableToLoad")}</p>

@@ -41,6 +41,7 @@ import {
   type ProductFormValues,
 } from "@/schemas/product";
 import type { Product, ProductStatus } from "@/types/product";
+import { ChipGroupSkeleton } from "@/components/ui/chip-group-skeleton";
 
 type ProductFormProps = {
   product?: Product;
@@ -388,7 +389,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
   return (
     <form className="space-y-6" onSubmit={(event) => event.preventDefault()}>
-      <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="space-y-4 rounded-2xl border border-white/10 bg-white/3 p-6">
         <div>
           <label htmlFor="name" className="mb-2 block text-sm text-muted">
             {t("name")}
@@ -460,7 +461,7 @@ export function ProductForm({ product }: ProductFormProps) {
         </div>
       </div>
 
-      <div className="space-y-5 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="space-y-5 rounded-2xl border border-white/10 bg-white/3 p-6">
         <div>
           <h2 className="font-display text-lg font-semibold text-foreground">
             {t("taxonomyTitle")}
@@ -471,7 +472,7 @@ export function ProductForm({ product }: ProductFormProps) {
         <div>
           <p className="mb-3 text-sm text-muted">{t("categories")}</p>
           {categoriesQuery.isLoading ? (
-            <p className="text-sm text-muted">{t("taxonomyLoading")}</p>
+            <ChipGroupSkeleton count={5} />
           ) : (categoriesQuery.data?.data.length ?? 0) === 0 ? (
             <p className="text-sm text-muted">{t("taxonomyEmpty")}</p>
           ) : (
@@ -501,7 +502,7 @@ export function ProductForm({ product }: ProductFormProps) {
         <div>
           <p className="mb-3 text-sm text-muted">{t("colors")}</p>
           {colorsQuery.isLoading ? (
-            <p className="text-sm text-muted">{t("taxonomyLoading")}</p>
+            <ChipGroupSkeleton count={5} />
           ) : (colorsQuery.data?.data.length ?? 0) === 0 ? (
             <p className="text-sm text-muted">{t("taxonomyEmpty")}</p>
           ) : (
@@ -536,7 +537,7 @@ export function ProductForm({ product }: ProductFormProps) {
         <div>
           <p className="mb-3 text-sm text-muted">{t("sizes")}</p>
           {sizesQuery.isLoading ? (
-            <p className="text-sm text-muted">{t("taxonomyLoading")}</p>
+            <ChipGroupSkeleton count={6} />
           ) : (sizesQuery.data?.data.length ?? 0) === 0 ? (
             <p className="text-sm text-muted">{t("taxonomyEmpty")}</p>
           ) : (
@@ -566,7 +567,7 @@ export function ProductForm({ product }: ProductFormProps) {
         <div>
           <p className="mb-3 text-sm text-muted">{t("genders")}</p>
           {gendersQuery.isLoading ? (
-            <p className="text-sm text-muted">{t("taxonomyLoading")}</p>
+            <ChipGroupSkeleton count={3} />
           ) : (gendersQuery.data?.data.length ?? 0) === 0 ? (
             <p className="text-sm text-muted">{t("taxonomyEmpty")}</p>
           ) : (
@@ -594,7 +595,7 @@ export function ProductForm({ product }: ProductFormProps) {
         </div>
       </div>
 
-      <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="space-y-4 rounded-2xl border border-white/10 bg-white/3 p-6">
         <div>
           <h2 className="font-display text-lg font-semibold text-foreground">{t("images")}</h2>
           <p className="mt-1 text-sm text-muted">{t("imagesHint")}</p>
@@ -617,7 +618,7 @@ export function ProductForm({ product }: ProductFormProps) {
                   onDragEnd={handleDragEnd}
                   className={`space-y-3 ${isDragging ? "opacity-40" : ""} ${isDropTarget ? "ring-1 ring-white/30" : ""}`}
                 >
-                  <div className="relative aspect-[4/5] cursor-grab overflow-hidden bg-white/[0.04] active:cursor-grabbing">
+                  <div className="relative aspect-4/5 cursor-grab overflow-hidden bg-white/4 active:cursor-grabbing">
                     {item.kind === "saved" ? (
                       <Image
                         src={previewUrl}

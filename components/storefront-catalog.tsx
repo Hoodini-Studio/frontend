@@ -17,6 +17,8 @@ import { useStorefrontFilters } from "@/hooks/use-storefront-filters";
 import { formatEuroFromCents } from "@/lib/money";
 import { localizedName } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
+import { ProductGridSkeleton } from "@/components/ui/product-grid-skeleton";
+import { SkeletonBlock } from "@/components/ui/skeleton-block";
 
 const HOME_PRODUCT_LIMIT = 48;
 const EMPTY_CATEGORIES: never[] = [];
@@ -199,9 +201,13 @@ function StorefrontCatalogContent() {
           ) : null}
         </button>
 
-        <p className="text-sm text-muted">
-          {isLoading ? tCommon("loading") : t("resultsCount", { count: total })}
-        </p>
+        <div className="text-sm text-muted">
+          {isLoading ? (
+            <SkeletonBlock className="h-4 w-24" />
+          ) : (
+            t("resultsCount", { count: total })
+          )}
+        </div>
 
         <label className="ml-auto flex items-center gap-2 text-sm text-muted">
           <span className="sr-only sm:not-sr-only">{t("sortLabel")}</span>
@@ -263,6 +269,8 @@ function StorefrontCatalogContent() {
         </ul>
       ) : null}
 
+      {isLoading ? <ProductGridSkeleton /> : null}
+
       {isError ? (
         <p className="mt-10 text-sm text-red-300">{t("unableToLoad")}</p>
       ) : null}
@@ -311,6 +319,14 @@ function StorefrontCatalogContent() {
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                   ) : null}
+                  {(product.images?.length ?? 0) > 1 ? (
+                    <span
+                      aria-label={t("imageCount", { count: product.images.length })}
+                      className="absolute bottom-3 right-3 bg-black/55 px-2 py-1 text-xs tabular-nums text-foreground backdrop-blur-sm"
+                    >
+                      {product.images.length}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="mt-4 flex items-baseline justify-between gap-4">
                   <h2 className="font-display text-lg font-semibold text-foreground transition group-hover:opacity-80">
@@ -358,13 +374,11 @@ function StorefrontCatalogContent() {
 }
 
 export function StorefrontCatalog() {
-  const tCommon = useTranslations("common");
-
   return (
     <Suspense
       fallback={
         <div className="mx-auto min-h-[calc(100vh-4rem)] max-w-6xl px-6 py-12">
-          <p className="text-sm text-muted">{tCommon("loading")}</p>
+          <ProductGridSkeleton />
         </div>
       }
     >

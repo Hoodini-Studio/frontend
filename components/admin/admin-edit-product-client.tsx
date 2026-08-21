@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { use, useMemo } from "react";
 import { ProductForm } from "@/components/admin/product-form";
 import { useAdminProduct } from "@/hooks/use-products";
+import { SkeletonBlock } from "@/components/ui/skeleton-block";
 
 type AdminEditProductClientProps = {
   params: Promise<{ id: string }>;
@@ -42,7 +43,15 @@ export function AdminEditProductClient({ params }: AdminEditProductClientProps) 
         {notice ? <p className="mt-4 text-sm text-amber-200">{notice}</p> : null}
       </div>
 
-      {isLoading ? <p className="text-sm text-muted">{t("loading")}</p> : null}
+      {isLoading ? (
+        <div className="space-y-5" aria-busy="true">
+          <span className="sr-only">{t("loading")}</span>
+          <SkeletonBlock className="h-11 w-full rounded-xl" />
+          <SkeletonBlock className="h-11 w-full rounded-xl" />
+          <SkeletonBlock className="h-28 w-full rounded-xl" />
+          <SkeletonBlock className="h-11 w-40 rounded-xl" />
+        </div>
+      ) : null}
       {isError ? <p className="text-sm text-red-300">{t("unableToLoad")}</p> : null}
       {data?.data ? <ProductForm product={data.data} /> : null}
     </main>

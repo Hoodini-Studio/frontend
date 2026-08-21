@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useAdminUsers } from "@/hooks/use-users";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 
 function formatRoleLabel(
   role: string,
@@ -106,7 +107,7 @@ export function UsersList() {
         </button>
       </div>
 
-      {isLoading ? <p className="text-sm text-muted">{t("loading")}</p> : null}
+      {isLoading ? <TableSkeleton rows={6} columns={4} /> : null}
       {isError ? <p className="text-sm text-red-300">{t("unableToLoad")}</p> : null}
 
       {!isLoading && !isError && users.length === 0 ? (
@@ -119,8 +120,8 @@ export function UsersList() {
         <div
           className={`overflow-x-auto rounded-2xl border border-white/10 ${isFetching ? "opacity-70" : ""}`}
         >
-          <table className="min-w-[40rem] w-full divide-y divide-white/10 text-left text-sm">
-            <thead className="bg-white/[0.03] text-muted">
+          <table className="min-w-160 w-full divide-y divide-white/10 text-left text-sm">
+            <thead className="bg-white/3 text-muted">
               <tr>
                 <th className="px-4 py-3 font-medium">{t("name")}</th>
                 <th className="px-4 py-3 font-medium">{t("email")}</th>

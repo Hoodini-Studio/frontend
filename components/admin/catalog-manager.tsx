@@ -31,6 +31,7 @@ import {
 import { useApiMessageTranslator } from "@/hooks/use-api-message-translator";
 import { ApiError } from "@/lib/api/client";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { ListRowsSkeleton } from "@/components/ui/list-rows-skeleton";
 import { useToast } from "@/providers/toast-provider";
 import type {
   CatalogCategory,
@@ -750,7 +751,7 @@ export function CatalogManager() {
           </div>
 
           {categoriesQuery.isLoading ? (
-            <p className="text-sm text-muted">{t("loading")}</p>
+            <ListRowsSkeleton rows={3} />
           ) : categoriesQuery.isError ? (
             <p className="text-sm text-red-300">{t("unableToLoad")}</p>
           ) : localCategories.length === 0 ? (
@@ -898,7 +899,7 @@ export function CatalogManager() {
           </div>
 
           {colorsQuery.isLoading ? (
-            <p className="text-sm text-muted">{t("loading")}</p>
+            <ListRowsSkeleton rows={3} />
           ) : colorsQuery.isError ? (
             <p className="text-sm text-red-300">{t("unableToLoad")}</p>
           ) : localColors.length === 0 ? (
@@ -1013,7 +1014,7 @@ export function CatalogManager() {
           </div>
 
           {sizesQuery.isLoading ? (
-            <p className="text-sm text-muted">{t("loading")}</p>
+            <ListRowsSkeleton rows={3} />
           ) : sizesQuery.isError ? (
             <p className="text-sm text-red-300">{t("unableToLoad")}</p>
           ) : localSizes.length === 0 ? (
@@ -1127,7 +1128,7 @@ export function CatalogManager() {
           </div>
 
           {gendersQuery.isLoading ? (
-            <p className="text-sm text-muted">{t("loading")}</p>
+            <ListRowsSkeleton rows={3} />
           ) : gendersQuery.isError ? (
             <p className="text-sm text-red-300">{t("unableToLoad")}</p>
           ) : localGenders.length === 0 ? (

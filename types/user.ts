@@ -4,6 +4,11 @@ export type User = {
   email: string;
   email_verified_at: string | null;
   preferred_locale: "sq" | "en";
+  phone?: string | null;
+  shipping_country_code?: "XK" | "AL" | "MK" | null;
+  shipping_city?: string | null;
+  shipping_address_line?: string | null;
+  shipping_postal_code?: string | null;
   avatar_url?: string | null;
   roles: string[];
   created_at: string;
