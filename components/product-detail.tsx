@@ -186,7 +186,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                       <button
                         type="button"
                         onClick={() => setActiveIndex(index)}
-                        aria-label={t("viewImage", { index: index + 1 })}
+                        aria-label={t("imageThumb", { index: index + 1 })}
                         className={`relative aspect-square overflow-hidden border transition ${
                           index === resolvedIndex
                             ? "border-white/40"
