@@ -35,6 +35,14 @@ export const API_MESSAGE_KEYS = {
   "The preferred locale field is required.": "preferredLocaleRequired",
   "The selected preferred locale is invalid.": "preferredLocaleInvalid",
   "At least one product image is required.": "atLeastOneProductImageRequired",
+
+  "Invalid coupon code.": "couponCodeInvalid",
+  "Coupon is inactive.": "couponInactive",
+  "Coupon not active yet.": "couponNotActiveYet",
+  "Coupon has expired.": "couponExpired",
+  "Coupon usage limit reached.": "couponUsageLimit",
+  "Max uses per user exceeded.": "couponUserLimit",
+  "Cart subtotal too low.": "couponSubtotalTooLow",
 } as const;
 
 export type ApiMessageKey = (typeof API_MESSAGE_KEYS)[keyof typeof API_MESSAGE_KEYS];

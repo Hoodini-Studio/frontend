@@ -27,7 +27,8 @@ type FieldKey =
   | "address_line"
   | "postal_code"
   | "notes"
-  | "payment_method";
+  | "payment_method"
+  | "coupon_code";
 
 type FieldErrors = Partial<Record<FieldKey, string>>;
 
@@ -40,6 +41,7 @@ const FIELD_ORDER: FieldKey[] = [
   "address_line",
   "postal_code",
   "notes",
+  "coupon_code",
   "payment_method",
 ];
 
@@ -53,6 +55,7 @@ const API_FIELD_MAP: Record<string, FieldKey> = {
   postal_code: "postal_code",
   notes: "notes",
   payment_method: "payment_method",
+  coupon_code: "coupon_code",
 };
 
 function isValidEmail(value: string): boolean {
@@ -102,6 +105,8 @@ export function CheckoutPageContent() {
   const [addressLine, setAddressLine] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [notes, setNotes] = useState("");
+  const [couponDraft, setCouponDraft] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -121,6 +126,7 @@ export function CheckoutPageContent() {
   const quoteQuery = useCheckoutQuote(
     countryCode || null,
     Boolean(countryCode) && (cartQuery.data?.item_count ?? 0) > 0,
+    appliedCoupon,
   );
 
   const cart = cartQuery.data;
@@ -199,6 +205,7 @@ export function CheckoutPageContent() {
         postal_code: postalCode.trim(),
         notes: notes.trim() || null,
         payment_method: paymentMethod,
+        coupon_code: appliedCoupon,
       });
 
       router.push(`/checkout/success?number=${encodeURIComponent(response.data.number)}`);
@@ -416,6 +423,76 @@ export function CheckoutPageContent() {
           </div>
         </div>
 
+        <div>
+          <FieldLabel htmlFor="coupon_code">{t("checkoutCoupon")}</FieldLabel>
+          <div className="flex gap-2">
+            <input
+              id="coupon_code"
+              value={couponDraft}
+              disabled={Boolean(appliedCoupon)}
+              aria-invalid={Boolean(fieldErrors.coupon_code) || Boolean(quoteQuery.isError && appliedCoupon)}
+              onChange={(e) => {
+                setCouponDraft(e.target.value.toUpperCase());
+                clearFieldError("coupon_code");
+              }}
+              className={`${fieldClassName(
+                Boolean(fieldErrors.coupon_code) ||
+                  Boolean(quoteQuery.isError && appliedCoupon),
+              )} flex-1 disabled:opacity-70`}
+              placeholder={t("checkoutCouponPlaceholder")}
+            />
+            {appliedCoupon ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setAppliedCoupon(null);
+                  setCouponDraft("");
+                  clearFieldError("coupon_code");
+                }}
+                className="shrink-0 rounded-xl border border-white/15 px-4 py-3 text-sm text-muted transition hover:border-white/30 hover:text-foreground"
+              >
+                {t("checkoutRemoveCoupon")}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={!countryCode || !couponDraft.trim()}
+                onClick={() => {
+                  clearFieldError("coupon_code");
+                  setAppliedCoupon(couponDraft.trim() || null);
+                }}
+                className="shrink-0 rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
+              >
+                {t("checkoutApplyCoupon")}
+              </button>
+            )}
+          </div>
+          {!countryCode ? (
+            <p className="mt-2 text-xs text-muted">{t("checkoutCouponNeedCountry")}</p>
+          ) : null}
+          {fieldErrors.coupon_code ? (
+            <p className="mt-2 text-sm text-red-300">{fieldErrors.coupon_code}</p>
+          ) : null}
+          {quoteQuery.isError && appliedCoupon ? (
+            <p className="mt-2 text-sm text-red-300">
+              {quoteQuery.error instanceof ApiError
+                ? translateErrors(quoteQuery.error.errors).coupon_code?.[0] ??
+                  translateMessage(quoteQuery.error.message)
+                : t("checkoutCouponInvalid")}
+            </p>
+          ) : null}
+          {!quoteQuery.isError &&
+          appliedCoupon &&
+          (quoteQuery.data?.discount_cents ?? 0) > 0 ? (
+            <p className="mt-2 text-sm text-muted">
+              {t("checkoutCouponApplied", {
+                code: quoteQuery.data?.coupon_code ?? appliedCoupon,
+                amount: formatEuroFromCents(quoteQuery.data?.discount_cents ?? 0),
+              })}
+            </p>
+          ) : null}
+        </div>
+
         <fieldset className="space-y-3">
           <legend className="text-sm text-muted">{t("checkoutPayment")} *</legend>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -473,7 +550,10 @@ export function CheckoutPageContent() {
 
         <button
           type="button"
-          disabled={placeOrder.isPending}
+          disabled={
+            placeOrder.isPending ||
+            (Boolean(appliedCoupon) && (quoteQuery.isError || quoteQuery.isFetching))
+          }
           onClick={() => void submit()}
           className="rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-60"
         >
@@ -510,6 +590,17 @@ export function CheckoutPageContent() {
               )}
             </span>
           </div>
+          {(quoteQuery.data?.discount_cents ?? 0) > 0 ? (
+            <div className="flex justify-between text-muted">
+              <span>
+                {t("checkoutDiscount")}
+                {quoteQuery.data?.coupon_code
+                  ? ` (${quoteQuery.data.coupon_code})`
+                  : ""}
+              </span>
+              <span>-{formatEuroFromCents(quoteQuery.data?.discount_cents ?? 0)}</span>
+            </div>
+          ) : null}
           <div className="flex justify-between pt-2 text-base font-medium text-foreground">
             <span>{t("checkoutTotal")}</span>
             <span>

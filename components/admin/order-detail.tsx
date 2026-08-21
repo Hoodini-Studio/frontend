@@ -143,6 +143,15 @@ export function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
             <span>{t("shipping")}</span>
             <span>{formatEuroFromCents(order.shipping_cents)}</span>
           </div>
+          {order.discount_cents > 0 ? (
+            <div className="flex justify-between text-muted print:text-black/70">
+              <span>
+                {t("discount")}
+                {order.coupon_code ? ` (${order.coupon_code})` : ""}
+              </span>
+              <span>-{formatEuroFromCents(order.discount_cents)}</span>
+            </div>
+          ) : null}
           <div className="flex justify-between border-t border-white/10 pt-2 text-base font-medium text-foreground print:border-black/20 print:pt-1 print:text-[12px] print:text-black">
             <span>{t("total")}</span>
             <span>{formatEuroFromCents(order.total_cents)}</span>

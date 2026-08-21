@@ -4,6 +4,8 @@ import type {
   CheckoutInput,
   CheckoutQuote,
   CountryCode,
+  Coupon,
+  CouponInput,
   Order,
   OrderStatus,
   PaymentStatus,
@@ -62,10 +64,16 @@ export function updateAdminShippingZone(id: string, payload: ShippingZoneInput) 
   });
 }
 
-export function quoteCheckout(country_code: CountryCode) {
+export function quoteCheckout(
+  country_code: CountryCode,
+  coupon_code?: string | null,
+) {
   return apiRequest<{ data: CheckoutQuote }>("/api/checkout/quote", {
     method: "POST",
-    body: { country_code },
+    body: {
+      country_code,
+      ...(coupon_code ? { coupon_code } : {}),
+    },
   });
 }
 
@@ -73,6 +81,33 @@ export function placeCheckout(payload: CheckoutInput) {
   return apiRequest<{ data: Order }>("/api/checkout", {
     method: "POST",
     body: payload,
+  });
+}
+
+export function listAdminCoupons(init?: { signal?: AbortSignal }) {
+  return apiRequest<{ data: Coupon[] }>("/api/admin/coupons", {
+    signal: init?.signal,
+  });
+}
+
+export function createAdminCoupon(payload: CouponInput) {
+  return apiRequest<{ data: Coupon }>("/api/admin/coupons", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export function updateAdminCoupon(id: string, payload: CouponInput) {
+  return apiRequest<{ data: Coupon }>(`/api/admin/coupons/${id}`, {
+    method: "PATCH",
+    body: payload,
+  });
+}
+
+export function deleteAdminCoupon(id: string) {
+  return apiRequest<{ message: string }>(`/api/admin/coupons/${id}`, {
+    method: "DELETE",
+    body: {},
   });
 }
 

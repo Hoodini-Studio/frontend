@@ -3,9 +3,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addCartItem,
+  createAdminCoupon,
+  deleteAdminCoupon,
   getAdminOrder,
   getCart,
   getMyOrder,
+  listAdminCoupons,
   listAdminOrders,
   listAdminShippingZones,
   listMyOrders,
@@ -13,6 +16,7 @@ import {
   placeCheckout,
   quoteCheckout,
   removeCartItem,
+  updateAdminCoupon,
   updateAdminOrderPaymentStatus,
   updateAdminOrderStatus,
   updateAdminShippingZone,
@@ -23,6 +27,7 @@ import {
 import type {
   CheckoutInput,
   CountryCode,
+  CouponInput,
   OrderStatus,
   PaymentStatus,
   ShippingProfileInput,
@@ -98,11 +103,62 @@ export function useUpdateShippingZoneMutation() {
   });
 }
 
-export function useCheckoutQuote(countryCode: CountryCode | null, enabled: boolean) {
+export function useCheckoutQuote(
+  countryCode: CountryCode | null,
+  enabled: boolean,
+  couponCode?: string | null,
+) {
+  const normalizedCoupon = couponCode?.trim() ? couponCode.trim() : null;
+
   return useQuery({
-    queryKey: ["checkout", "quote", countryCode],
-    queryFn: async () => (await quoteCheckout(countryCode as CountryCode)).data,
+    queryKey: ["checkout", "quote", countryCode, normalizedCoupon],
+    queryFn: async () =>
+      (await quoteCheckout(countryCode as CountryCode, normalizedCoupon)).data,
     enabled: enabled && countryCode !== null,
+    retry: false,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useAdminCoupons() {
+  return useQuery({
+    queryKey: ["admin", "coupons"],
+    queryFn: async ({ signal }) => (await listAdminCoupons({ signal })).data,
+  });
+}
+
+export function useCreateCouponMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CouponInput) => createAdminCoupon(payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "coupons"] });
+    },
+  });
+}
+
+export function useUpdateCouponMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: CouponInput }) =>
+      updateAdminCoupon(id, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "coupons"] });
+    },
+  });
+}
+
+export function useDeleteCouponMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteAdminCoupon(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "coupons"] });
+    },
   });
 }
 

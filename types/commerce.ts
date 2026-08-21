@@ -48,6 +48,37 @@ export type CheckoutQuote = {
   total_cents: number;
   item_count: number;
   country_code: CountryCode;
+  coupon_code?: string | null;
+};
+
+export type CouponType = "percent" | "fixed";
+
+export type Coupon = {
+  id: string;
+  code: string;
+  type: CouponType;
+  value: number;
+  is_active: boolean;
+  starts_at: string | null;
+  ends_at: string | null;
+  min_subtotal_cents: number | null;
+  max_uses: number | null;
+  uses_count: number;
+  max_uses_per_user: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CouponInput = {
+  code?: string;
+  type?: CouponType;
+  value?: number;
+  is_active?: boolean;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  min_subtotal_cents?: number | null;
+  max_uses?: number | null;
+  max_uses_per_user?: number | null;
 };
 
 export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
@@ -85,6 +116,8 @@ export type Order = {
   address_line: string;
   postal_code: string | null;
   notes: string | null;
+  coupon_id?: string | null;
+  coupon_code?: string | null;
   items?: OrderItem[];
   created_at: string;
   updated_at: string;
@@ -100,6 +133,7 @@ export type CheckoutInput = {
   postal_code: string;
   notes?: string | null;
   payment_method: PaymentMethod;
+  coupon_code?: string | null;
 };
 
 export type ShippingProfileInput = {
