@@ -63,7 +63,7 @@
     "notFoundMessage": "Ky produkt nuk është i disponueshëm ose nuk është më i publikuar.",
     "addToCart": "Shto në shportë",
     "addingToCart": "Duke shtuar…",
-    "addedToCart": "U shtua në shportë.",
+    "addedToCart": "U shtua në shportë",
     "unableToAddToCart": "Nuk u arrit të shtohet në shportë.",
     "selectOneOption": "Zgjidhni: {option}",
     "selectMultipleOptions": "Zgjidhni: {options}",

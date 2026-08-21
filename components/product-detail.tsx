@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import { use, useMemo, useRef, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import { usePublishedProduct } from "@/hooks/use-products";
 import { useAddCartItemMutation } from "@/hooks/use-commerce";
 import { formatEuroFromCents } from "@/lib/money";
@@ -29,8 +29,11 @@ export function ProductDetail({ slug }: ProductDetailProps) {
   const [needsColor, setNeedsColor] = useState(false);
   const [needsSize, setNeedsSize] = useState(false);
   const [optionsSyncedFor, setOptionsSyncedFor] = useState<string | null>(null);
+  const [justAdded, setJustAdded] = useState(false);
+  const [buttonPopping, setButtonPopping] = useState(false);
   const colorSectionRef = useRef<HTMLDivElement | null>(null);
   const sizeSectionRef = useRef<HTMLDivElement | null>(null);
+  const addedResetRef = useRef<number | null>(null);
   const addToCart = useAddCartItemMutation();
 
   const images = product?.images ?? [];
@@ -82,8 +85,16 @@ export function ProductDetail({ slug }: ProductDetailProps) {
     setActiveIndex((current) => (current + 1) % images.length);
   };
 
+  useEffect(() => {
+    return () => {
+      if (addedResetRef.current != null) {
+        window.clearTimeout(addedResetRef.current);
+      }
+    };
+  }, []);
+
   const handleAddToCart = () => {
-    if (!product) {
+    if (!product || addToCart.isPending) {
       return;
     }
 
@@ -103,6 +114,9 @@ export function ProductDetail({ slug }: ProductDetailProps) {
 
     setNeedsColor(false);
     setNeedsSize(false);
+    setJustAdded(false);
+    setButtonPopping(false);
+
     void addToCart
       .mutateAsync({
         product_id: product.id,
@@ -110,7 +124,19 @@ export function ProductDetail({ slug }: ProductDetailProps) {
         color_id: selectedColorId,
         size_id: selectedSizeId,
       })
-      .then(() => toast(t("addedToCart")))
+      .then(() => {
+        setJustAdded(true);
+        setButtonPopping(true);
+
+        if (addedResetRef.current != null) {
+          window.clearTimeout(addedResetRef.current);
+        }
+
+        addedResetRef.current = window.setTimeout(() => {
+          setJustAdded(false);
+          addedResetRef.current = null;
+        }, 1600);
+      })
       .catch(() => toast(t("unableToAddToCart"), { variant: "error" }));
   };
 
@@ -187,7 +213,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                         type="button"
                         onClick={() => setActiveIndex(index)}
                         aria-label={t("imageThumb", { index: index + 1 })}
-                        className={`relative aspect-square overflow-hidden border transition ${
+                        className={`relative block aspect-square w-full overflow-hidden border transition ${
                           index === resolvedIndex
                             ? "border-white/40"
                             : "border-white/10 hover:border-white/25"
@@ -262,9 +288,40 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                 type="button"
                 disabled={addToCart.isPending}
                 onClick={handleAddToCart}
-                className="mt-8 w-full rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+                onAnimationEnd={(event) => {
+                  if (event.animationName === "cart-added-pop") {
+                    setButtonPopping(false);
+                  }
+                }}
+                aria-live="polite"
+                aria-label={justAdded ? t("addedToCart") : undefined}
+                className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-medium transition disabled:opacity-60 sm:min-w-44 sm:w-auto ${
+                  justAdded
+                    ? "border border-white bg-black text-white"
+                    : "border border-transparent bg-foreground text-background hover:opacity-90"
+                } ${buttonPopping ? "cart-added-pop" : ""}`}
               >
-                {addToCart.isPending ? t("addingToCart") : t("addToCart")}
+                {addToCart.isPending ? (
+                  t("addingToCart")
+                ) : justAdded ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    className="cart-added-check h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 10.5 8 14.5 16 5.5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  t("addToCart")
+                )}
               </button>
 
               {localizedDescription(product, locale) ? (

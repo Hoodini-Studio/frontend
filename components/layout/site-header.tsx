@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-commerce";
 import { UserMenu } from "@/components/layout/user-menu";
@@ -35,6 +36,26 @@ export function SiteHeader() {
   const cartQuery = useCart({ enabled: showCart && !isLoading });
   const homePath = getHomePathForUser(user);
   const cartCount = cartQuery.data?.item_count ?? 0;
+  const previousCountRef = useRef<number | null>(null);
+  const [badgeBumping, setBadgeBumping] = useState(false);
+
+  useEffect(() => {
+    if (!cartQuery.isSuccess) {
+      return;
+    }
+
+    const previous = previousCountRef.current;
+    previousCountRef.current = cartCount;
+
+    if (previous == null || cartCount <= previous) {
+      return;
+    }
+
+    setBadgeBumping(false);
+    const frame = window.requestAnimationFrame(() => setBadgeBumping(true));
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [cartCount, cartQuery.isSuccess]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-background/95 print:hidden">
@@ -55,7 +76,12 @@ export function SiteHeader() {
             >
               <CartIcon className="h-5 w-5" />
               {cartCount > 0 ? (
-                <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium text-background">
+                <span
+                  className={`absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium text-background ${
+                    badgeBumping ? "cart-badge-bump" : ""
+                  }`}
+                  onAnimationEnd={() => setBadgeBumping(false)}
+                >
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               ) : null}
