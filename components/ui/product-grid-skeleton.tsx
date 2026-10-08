@@ -1,10 +1,17 @@
 import { SkeletonBlock } from "@/components/ui/skeleton-block";
 
-export function ProductGridSkeleton({ count = 6 }: { count?: number }) {
+export function ProductGridSkeleton({
+  count = 6,
+  className = "mt-8",
+}: {
+  count?: number;
+  /** Applied to the grid list — default matches the live product grid spacing. */
+  className?: string;
+}) {
   return (
     <div aria-busy="true" aria-live="polite">
       <span className="sr-only">Loading</span>
-      <ul className="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className={`grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 ${className}`}>
         {Array.from({ length: count }).map((_, index) => (
           <li key={index}>
             <SkeletonBlock className="aspect-4/5 w-full rounded-none" />

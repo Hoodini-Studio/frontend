@@ -19,11 +19,13 @@ import { formatEuroFromCents } from "@/lib/money";
 import { localizedName } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { ProductGridSkeleton } from "@/components/ui/product-grid-skeleton";
+import { StorefrontCatalogSkeleton } from "@/components/ui/storefront-catalog-skeleton";
 import { Select } from "@/components/ui/select";
 import { SkeletonBlock } from "@/components/ui/skeleton-block";
 import { FavouriteButton } from "@/components/favourite-button";
 import { isAdmin } from "@/lib/auth/roles";
 import { useCurrentUser } from "@/hooks/use-auth";
+import { pageShellClass } from "@/lib/layout";
 
 const HOME_PRODUCT_LIMIT = 48;
 const EMPTY_CATEGORIES: never[] = [];
@@ -189,7 +191,7 @@ function StorefrontCatalogContent() {
   ]);
 
   return (
-    <div className="mx-auto min-h-[calc(100vh-4rem)] max-w-6xl px-6 py-12 sm:py-16">
+    <div className={pageShellClass("shell", "min-h-[calc(100vh-4rem)] py-12 sm:py-16")}>
       <header className="mb-12 max-w-2xl">
         <p className="text-sm uppercase tracking-[0.25em] text-muted">{t("eyebrow")}</p>
         <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
@@ -402,13 +404,7 @@ function StorefrontCatalogContent() {
 
 export function StorefrontCatalog() {
   return (
-    <Suspense
-      fallback={
-        <div className="mx-auto min-h-[calc(100vh-4rem)] max-w-6xl px-6 py-12">
-          <ProductGridSkeleton />
-        </div>
-      }
-    >
+    <Suspense fallback={<StorefrontCatalogSkeleton />}>
       <StorefrontCatalogContent />
     </Suspense>
   );

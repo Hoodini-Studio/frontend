@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useAdminOrders } from "@/hooks/use-commerce";
 import { useAdminProducts } from "@/hooks/use-products";
 import { SkeletonBlock } from "@/components/ui/skeleton-block";
+import { pageShellClass } from "@/lib/layout";
 
 export function AdminDashboard() {
   const t = useTranslations("admin");
@@ -36,7 +37,7 @@ export function AdminDashboard() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_100%_100%,rgba(255,255,255,0.04),transparent_50%)]" />
       </div>
 
-      <div className="mx-auto max-w-4xl px-6 py-12 sm:py-16">
+      <div className={pageShellClass("shell", "py-12 sm:py-16")}>
         <header className="max-w-2xl animate-[fade-in-up_0.7s_ease-out]">
           <p className="text-sm uppercase tracking-[0.25em] text-muted">{t("eyebrow")}</p>
           <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">

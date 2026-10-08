@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
+import { PAGE_WIDTH } from "@/lib/layout";
 import { INSTAGRAM_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export function SiteFooter() {
@@ -17,7 +18,7 @@ export function SiteFooter() {
 
   return (
     <footer className="mt-auto border-t border-white/10">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10 sm:flex-row sm:items-start sm:justify-between">
+      <div className={`mx-auto flex w-full ${PAGE_WIDTH.shell} flex-col gap-8 px-6 py-10 sm:flex-row sm:items-start sm:justify-between`}>
         <div className="space-y-3">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.22em] text-foreground">
             Hoodini Studio

@@ -8,6 +8,7 @@ import { useCart } from "@/hooks/use-commerce";
 import { useFavouriteIds } from "@/hooks/use-favourites";
 import { UserMenu } from "@/components/layout/user-menu";
 import { getHomePathForUser, isAdmin } from "@/lib/auth/roles";
+import { PAGE_WIDTH } from "@/lib/layout";
 
 function CartIcon({ className }: { className?: string }) {
   return (
@@ -82,7 +83,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-background/95 print:hidden">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+      <div className={`mx-auto flex h-16 w-full ${PAGE_WIDTH.shell} items-center justify-between px-6`}>
         <Link
           href={homePath}
           className="font-display text-sm font-semibold uppercase tracking-[0.25em] text-foreground transition hover:opacity-80"

@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { OrderDetail } from "@/components/admin/order-detail";
+import { pageShellClass } from "@/lib/layout";
+
+export const metadata: Metadata = {
+  title: "Order",
+  robots: { index: false, follow: false },
+};
 
 export default function AdminOrderDetailPage({
   params,
@@ -6,7 +13,7 @@ export default function AdminOrderDetailPage({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
+    <main className={pageShellClass("reading", "py-10")}>
       <OrderDetail params={params} />
     </main>
   );

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AdminDashboardSkeleton } from "@/components/admin/admin-dashboard-skeleton";
+import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/auth/roles";
 
@@ -12,6 +13,7 @@ type AdminOnlyProps = {
 
 export function AdminOnly({ children }: AdminOnlyProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: user, isLoading } = useCurrentUser();
   const userId = user?.id;
   const userIsAdmin = isAdmin(user);
@@ -32,7 +34,10 @@ export function AdminOnly({ children }: AdminOnlyProps) {
   }, [isLoading, router, userId, userIsAdmin]);
 
   if (isLoading || !user || !userIsAdmin) {
-    return <AdminDashboardSkeleton />;
+    if (pathname === "/admin/dashboard") {
+      return <AdminDashboardSkeleton />;
+    }
+    return <AdminPageSkeleton />;
   }
 
   return children;

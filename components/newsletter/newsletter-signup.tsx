@@ -59,7 +59,7 @@ export function NewsletterSignup({
       id={id}
       className={`border-y border-white/10 bg-white/[0.02] ${className}`.trim()}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-14 sm:flex-row sm:items-end sm:justify-between sm:py-16">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-14 sm:flex-row sm:items-end sm:justify-between sm:py-16">
         <div className="max-w-md">
           <p className="font-display text-2xl font-semibold text-foreground sm:text-3xl">
             {t("title")}

@@ -15,6 +15,7 @@ import { ProductDetailSkeleton } from "@/components/ui/product-detail-skeleton";
 import { FavouriteButton } from "@/components/favourite-button";
 import { isAdmin } from "@/lib/auth/roles";
 import { useCurrentUser } from "@/hooks/use-auth";
+import { pageShellClass } from "@/lib/layout";
 
 type ProductDetailProps = {
   slug: string;
@@ -146,7 +147,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
   };
 
   return (
-    <div className="mx-auto min-h-[calc(100vh-4rem)] max-w-6xl px-6 py-12 sm:py-16">
+    <div className={pageShellClass("shell", "min-h-[calc(100vh-4rem)] py-12 sm:py-16")}>
       <Link
         href="/"
         className="text-sm text-muted transition hover:text-foreground"

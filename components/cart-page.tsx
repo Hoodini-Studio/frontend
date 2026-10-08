@@ -13,6 +13,7 @@ import { localizedName } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { useToast } from "@/providers/toast-provider";
 import { CartSkeleton } from "@/components/ui/cart-skeleton";
+import { pageShellClass } from "@/lib/layout";
 
 export function CartPageContent() {
   const t = useTranslations("store");
@@ -43,7 +44,7 @@ export function CartPageContent() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-12">
+    <div className={pageShellClass("content", "py-12")}>
       <h1 className="font-display text-3xl font-semibold text-foreground">{t("cartTitle")}</h1>
 
       {cartQuery.isLoading ? <CartSkeleton /> : null}

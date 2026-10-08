@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { FavouriteButton } from "@/components/favourite-button";
 import { ProductGridSkeleton } from "@/components/ui/product-grid-skeleton";
+import { pageShellClass } from "@/lib/layout";
 import { useFavouritesList } from "@/hooks/use-favourites";
 import { formatEuroFromCents } from "@/lib/money";
 import { localizedName } from "@/lib/i18n/localized";
@@ -17,7 +18,7 @@ export function FavouritesPageContent() {
   const products = data ?? [];
 
   return (
-    <div className="mx-auto min-h-[calc(100vh-4rem)] max-w-6xl px-6 py-12 sm:py-16">
+    <div className={pageShellClass("shell", "min-h-[calc(100vh-4rem)] py-12 sm:py-16")}>
       <p className="text-sm uppercase tracking-[0.2em] text-muted">{t("favouritesEyebrow")}</p>
       <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
         {t("favouritesTitle")}
@@ -25,7 +26,7 @@ export function FavouritesPageContent() {
       <p className="mt-3 max-w-lg text-muted">{t("favouritesSubtitle")}</p>
 
       <div className="mt-10">
-        {isLoading ? <ProductGridSkeleton /> : null}
+        {isLoading ? <ProductGridSkeleton className="mt-0" /> : null}
 
         {isError ? (
           <p className="text-muted">{t("unableToLoadFavourites")}</p>

@@ -5,13 +5,14 @@ import { UsersList } from "@/components/admin/users-list";
 
 export const metadata: Metadata = {
   title: "Users",
+  robots: { index: false, follow: false },
 };
 
 export default async function AdminUsersPage() {
   const t = await getTranslations("adminUsers");
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
+    <main className="mx-auto w-full max-w-6xl px-6 py-10">
       <Link
         href="/admin/dashboard"
         className="inline-flex items-center gap-2 text-sm text-muted transition hover:text-foreground"
