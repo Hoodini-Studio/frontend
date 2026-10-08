@@ -20,10 +20,6 @@
     "sending": "Sending...",
     "tooManyAttempts": "Too many attempts. Please wait a minute and try again."
   },
-  "comingSoon": {
-    "badge": "Coming Soon",
-    "message": "Something amazing is coming soon."
-  },
   "store": {
     "eyebrow": "Shop",
     "emptyTitle": "Nothing here yet",
@@ -353,9 +349,7 @@
     "totalLabel": "total",
     "publishedLabel": "published",
     "draftLabel": "drafts",
-    "usersTotalLabel": "accounts",
-    "comingSoon": "Coming soon in the admin dashboard.",
-    "soon": "Soon"
+    "usersTotalLabel": "accounts"
   },
   "adminProducts": {
     "title": "Products",

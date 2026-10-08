@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { StorefrontFilters } from "@/components/storefront-filters";
-import type { StorefrontFilterState } from "@/hooks/use-storefront-filters";
+import type {
+  FacetKey,
+  StorefrontFilterState,
+} from "@/hooks/use-storefront-filters";
 import type {
   CatalogCategory,
   CatalogCollection,
@@ -11,8 +14,6 @@ import type {
   CatalogGender,
   CatalogSize,
 } from "@/types/catalog";
-
-type FacetKey = "category" | "collection" | "color" | "size" | "gender";
 
 type StorefrontFilterSheetProps = {
   open: boolean;

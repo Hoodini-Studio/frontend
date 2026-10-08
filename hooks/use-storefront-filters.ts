@@ -16,7 +16,7 @@ export type StorefrontFilterState = {
   sort: ProductSort;
 };
 
-type FacetKey = "category" | "collection" | "color" | "size" | "gender";
+export type FacetKey = "category" | "collection" | "color" | "size" | "gender";
 
 const SORT_VALUES: ProductSort[] = ["newest", "price_asc", "price_desc"];
 

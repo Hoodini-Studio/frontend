@@ -20,10 +20,6 @@
     "sending": "Duke dërguar...",
     "tooManyAttempts": "Shumë tentativa. Ju lutemi prisni një minutë dhe provoni përsëri."
   },
-  "comingSoon": {
-    "badge": "Së Shpejti",
-    "message": "Diçka e mrekullueshme po vjen së shpejti."
-  },
   "store": {
     "eyebrow": "Dyqani",
     "emptyTitle": "Ende asgjë këtu",
@@ -353,9 +349,7 @@
     "totalLabel": "gjithsej",
     "publishedLabel": "publikuar",
     "draftLabel": "draft-e",
-    "usersTotalLabel": "llogari",
-    "comingSoon": "Së shpejti në panelin e administratorit.",
-    "soon": "Së shpejti"
+    "usersTotalLabel": "llogari"
   },
   "adminProducts": {
     "title": "Produktet",

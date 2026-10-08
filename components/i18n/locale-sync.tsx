@@ -4,21 +4,10 @@ import { useLocale } from "next-intl";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/use-auth";
-import { setLocaleCookie } from "@/lib/i18n/cookie";
-import { LOCALE_COOKIE, normalizeLocale } from "@/lib/i18n/config";
+import { readLocaleCookie, setLocaleCookie } from "@/lib/i18n/cookie";
+import { normalizeLocale } from "@/lib/i18n/config";
 
 const SYNC_ATTEMPT_KEY = "hoodini.locale-sync";
-
-function readLocaleCookie(): string | null {
-  if (typeof document === "undefined") {
-    return null;
-  }
-
-  const match = document.cookie.match(
-    new RegExp(`(?:^|;\\s*)${LOCALE_COOKIE}=([^;]*)`),
-  );
-  return match?.[1] ? decodeURIComponent(match[1]) : null;
-}
 
 export function LocaleSync() {
   const locale = normalizeLocale(useLocale());
@@ -38,8 +27,7 @@ export function LocaleSync() {
       return;
     }
 
-    const cookieLocale = normalizeLocale(readLocaleCookie());
-    if (cookieLocale !== preferred) {
+    if (readLocaleCookie() !== preferred) {
       setLocaleCookie(preferred);
     }
 

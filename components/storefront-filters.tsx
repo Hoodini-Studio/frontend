@@ -17,9 +17,10 @@ import type {
   CatalogGender,
   CatalogSize,
 } from "@/types/catalog";
-import type { StorefrontFilterState } from "@/hooks/use-storefront-filters";
-
-type FacetKey = "category" | "collection" | "color" | "size" | "gender";
+import type {
+  FacetKey,
+  StorefrontFilterState,
+} from "@/hooks/use-storefront-filters";
 
 type StorefrontFiltersProps = {
   filters: StorefrontFilterState;

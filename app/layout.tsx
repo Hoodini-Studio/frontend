@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "sq_AL",
+    locale: "en_US",
     url: "/",
     siteName: "Hoodini Studio",
     title: "Hoodini Studio",

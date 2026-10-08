@@ -1,3 +1,4 @@
+import { getCookie } from "@/lib/i18n/cookie";
 import { LOCALE_COOKIE } from "@/lib/i18n/config";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -15,16 +16,6 @@ export class ApiError extends Error {
     this.status = status;
     this.errors = errors;
   }
-}
-
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") {
-    return null;
-  }
-
-  const match = document.cookie.match(new RegExp(`(^|;\\s*)${name}=([^;]*)`));
-
-  return match ? decodeURIComponent(match[2]) : null;
 }
 
 function combineSignals(...signals: AbortSignal[]): AbortSignal {
