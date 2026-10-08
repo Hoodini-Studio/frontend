@@ -8,7 +8,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run test && npm run test:e2e"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -23,16 +28,21 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.5.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "husky": "^9",
+    "jsdom": "^29.1.1",
     "lint-staged": "^15",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix"

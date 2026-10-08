@@ -1,90 +1,79 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { useCurrentUser } from "@/hooks/use-auth";
-import { subscribeNewsletter } from "@/lib/api/newsletter";
-import { ApiError } from "@/lib/api/client";
-import { useApiMessageTranslator } from "@/hooks/use-api-message-translator";
-
-function isHomePath(pathname: string) {
-  return pathname === "/";
-}
+import { INSTAGRAM_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export function SiteFooter() {
   const t = useTranslations("footer");
   const pathname = usePathname();
-  const { data: user, isLoading } = useCurrentUser();
-  const { translateMessage } = useApiMessageTranslator();
-  const [email, setEmail] = useState("");
-  const [pending, setPending] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    setPending(true);
-    setSuccess(null);
-    setError(null);
-
-    try {
-      const response = await subscribeNewsletter(email.trim());
-      setSuccess(translateMessage(response.message) || t("subscribed"));
-      setEmail("");
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(translateMessage(err.message) || t("unableToSubscribe"));
-      } else {
-        setError(t("unableToSubscribe"));
-      }
-    } finally {
-      setPending(false);
-    }
-  };
-
-  if (isLoading || user || !isHomePath(pathname)) {
+  if (pathname.startsWith("/admin")) {
     return null;
   }
 
+  const year = 2026;
+
   return (
-    <footer className="mt-20 border-t border-white/10">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-12 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-md">
-          <p className="font-display text-xl font-semibold text-foreground">
-            {t("newsletterTitle")}
+    <footer className="mt-auto border-t border-white/10">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-3">
+          <p className="font-display text-sm font-semibold uppercase tracking-[0.22em] text-foreground">
+            Hoodini Studio
           </p>
-          <p className="mt-2 text-sm text-muted">{t("newsletterSubtitle")}</p>
+          <p className="text-sm text-muted">{t("copyright", { year })}</p>
         </div>
 
-        <form onSubmit={(e) => void onSubmit(e)} className="w-full max-w-md">
-          <label htmlFor="footer-newsletter-email" className="sr-only">
-            {t("email")}
-          </label>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              id="footer-newsletter-email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t("emailPlaceholder")}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none focus:border-white/30"
-            />
-            <button
-              type="submit"
-              disabled={pending || !email.trim()}
-              className="shrink-0 rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-60"
-            >
-              {pending ? t("subscribing") : t("subscribe")}
-            </button>
+        <div className="flex flex-col gap-6 sm:flex-row sm:gap-12">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted">{t("legalHeading")}</p>
+            <ul className="space-y-1.5 text-sm">
+              <li>
+                <Link
+                  href="/terms"
+                  className="text-muted transition hover:text-foreground"
+                >
+                  {t("terms")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="text-muted transition hover:text-foreground"
+                >
+                  {t("privacy")}
+                </Link>
+              </li>
+            </ul>
           </div>
-          {success ? (
-            <p className="mt-2 text-sm text-emerald-300">{success}</p>
-          ) : null}
-          {error ? <p className="mt-2 text-sm text-red-300">{error}</p> : null}
-        </form>
+
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted">{t("contactHeading")}</p>
+            <ul className="space-y-1.5 text-sm">
+              <li>
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}`}
+                  className="text-muted transition hover:text-foreground"
+                >
+                  {SUPPORT_EMAIL}
+                </a>
+              </li>
+              {INSTAGRAM_URL ? (
+                <li>
+                  <a
+                    href={INSTAGRAM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted transition hover:text-foreground"
+                  >
+                    {t("instagram")}
+                  </a>
+                </li>
+              ) : null}
+            </ul>
+          </div>
+        </div>
       </div>
     </footer>
   );

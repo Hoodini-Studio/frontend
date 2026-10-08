@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { cookies } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 import { defaultLocale, LOCALE_COOKIE, normalizeLocale, type AppLocale } from "@/lib/i18n/config";
@@ -10,6 +11,7 @@ const messagesByLocale = {
 } as const satisfies Record<AppLocale, typeof sq>;
 
 export default getRequestConfig(async () => {
+  noStore();
   const store = await cookies();
   const locale = normalizeLocale(store.get(LOCALE_COOKIE)?.value ?? defaultLocale);
 

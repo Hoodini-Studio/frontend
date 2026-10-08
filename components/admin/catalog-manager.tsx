@@ -8,22 +8,27 @@ import {
 } from "react";
 import {
   useAdminCategories,
+  useAdminCollections,
   useAdminColors,
   useAdminGenders,
   useAdminSizes,
   useCreateCategoryMutation,
+  useCreateCollectionMutation,
   useCreateColorMutation,
   useCreateGenderMutation,
   useCreateSizeMutation,
   useDeleteCategoryMutation,
+  useDeleteCollectionMutation,
   useDeleteColorMutation,
   useDeleteGenderMutation,
   useDeleteSizeMutation,
   useReorderCategoriesMutation,
+  useReorderCollectionsMutation,
   useReorderColorsMutation,
   useReorderGendersMutation,
   useReorderSizesMutation,
   useUpdateCategoryMutation,
+  useUpdateCollectionMutation,
   useUpdateColorMutation,
   useUpdateGenderMutation,
   useUpdateSizeMutation,
@@ -35,12 +40,13 @@ import { ListRowsSkeleton } from "@/components/ui/list-rows-skeleton";
 import { useToast } from "@/providers/toast-provider";
 import type {
   CatalogCategory,
+  CatalogCollection,
   CatalogColor,
   CatalogGender,
   CatalogSize,
 } from "@/types/catalog";
 
-type CatalogTab = "categories" | "colors" | "sizes" | "genders";
+type CatalogTab = "categories" | "collections" | "colors" | "sizes" | "genders";
 
 type PendingDelete = {
   id: string;
@@ -226,6 +232,7 @@ export function CatalogManager() {
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
 
   const categoriesQuery = useAdminCategories();
+  const collectionsQuery = useAdminCollections();
   const colorsQuery = useAdminColors();
   const sizesQuery = useAdminSizes();
   const gendersQuery = useAdminGenders();
@@ -234,6 +241,10 @@ export function CatalogManager() {
   const updateCategory = useUpdateCategoryMutation();
   const deleteCategory = useDeleteCategoryMutation();
   const reorderCategories = useReorderCategoriesMutation();
+  const createCollection = useCreateCollectionMutation();
+  const updateCollection = useUpdateCollectionMutation();
+  const deleteCollection = useDeleteCollectionMutation();
+  const reorderCollections = useReorderCollectionsMutation();
   const createColor = useCreateColorMutation();
   const updateColor = useUpdateColorMutation();
   const deleteColor = useDeleteColorMutation();
@@ -253,6 +264,13 @@ export function CatalogManager() {
   const [categoryDescriptionSq, setCategoryDescriptionSq] = useState("");
   const [editingCategory, setEditingCategory] = useState<CatalogCategory | null>(null);
 
+  const [collectionNameEn, setCollectionNameEn] = useState("");
+  const [collectionNameSq, setCollectionNameSq] = useState("");
+  const [collectionDescriptionEn, setCollectionDescriptionEn] = useState("");
+  const [collectionDescriptionSq, setCollectionDescriptionSq] = useState("");
+  const [editingCollection, setEditingCollection] =
+    useState<CatalogCollection | null>(null);
+
   const [colorNameEn, setColorNameEn] = useState("");
   const [colorNameSq, setColorNameSq] = useState("");
   const [colorHex, setColorHex] = useState("#111111");
@@ -266,11 +284,15 @@ export function CatalogManager() {
   const [editingGender, setEditingGender] = useState<CatalogGender | null>(null);
 
   const [localCategories, setLocalCategories] = useState<CatalogCategory[]>([]);
+  const [localCollections, setLocalCollections] = useState<CatalogCollection[]>([]);
   const [localColors, setLocalColors] = useState<CatalogColor[]>([]);
   const [localSizes, setLocalSizes] = useState<CatalogSize[]>([]);
   const [localGenders, setLocalGenders] = useState<CatalogGender[]>([]);
   const [categoriesSyncedFrom, setCategoriesSyncedFrom] = useState<
     CatalogCategory[] | undefined
+  >(undefined);
+  const [collectionsSyncedFrom, setCollectionsSyncedFrom] = useState<
+    CatalogCollection[] | undefined
   >(undefined);
   const [colorsSyncedFrom, setColorsSyncedFrom] = useState<CatalogColor[] | undefined>(
     undefined,
@@ -287,6 +309,14 @@ export function CatalogManager() {
     setCategoriesSyncedFrom(categoriesData);
     if (categoriesData) {
       setLocalCategories(categoriesData);
+    }
+  }
+
+  const collectionsData = collectionsQuery.data?.data;
+  if (collectionsData !== collectionsSyncedFrom) {
+    setCollectionsSyncedFrom(collectionsData);
+    if (collectionsData) {
+      setLocalCollections(collectionsData);
     }
   }
 
@@ -319,6 +349,10 @@ export function CatalogManager() {
     updateCategory.isPending ||
     deleteCategory.isPending ||
     reorderCategories.isPending ||
+    createCollection.isPending ||
+    updateCollection.isPending ||
+    deleteCollection.isPending ||
+    reorderCollections.isPending ||
     createColor.isPending ||
     updateColor.isPending ||
     deleteColor.isPending ||
@@ -342,6 +376,7 @@ export function CatalogManager() {
 
   const isDeleting =
     deleteCategory.isPending ||
+    deleteCollection.isPending ||
     deleteColor.isPending ||
     deleteSize.isPending ||
     deleteGender.isPending;
@@ -358,6 +393,11 @@ export function CatalogManager() {
         await deleteCategory.mutateAsync(pendingDelete.id);
         if (editingCategory?.id === pendingDelete.id) {
           resetCategoryForm();
+        }
+      } else if (pendingDelete.kind === "collections") {
+        await deleteCollection.mutateAsync(pendingDelete.id);
+        if (editingCollection?.id === pendingDelete.id) {
+          resetCollectionForm();
         }
       } else if (pendingDelete.kind === "colors") {
         await deleteColor.mutateAsync(pendingDelete.id);
@@ -389,6 +429,14 @@ export function CatalogManager() {
     setCategoryDescriptionEn("");
     setCategoryDescriptionSq("");
     setEditingCategory(null);
+  };
+
+  const resetCollectionForm = () => {
+    setCollectionNameEn("");
+    setCollectionNameSq("");
+    setCollectionDescriptionEn("");
+    setCollectionDescriptionSq("");
+    setEditingCollection(null);
   };
 
   const resetColorForm = () => {
@@ -437,6 +485,39 @@ export function CatalogManager() {
         toast(t("createdToast"));
       }
       resetCategoryForm();
+    } catch (err) {
+      handleApiError(err, t("unableToSave"));
+    }
+  };
+
+  const submitCollection = async () => {
+    setError(null);
+    const nameEn = collectionNameEn.trim();
+    const nameSq = collectionNameSq.trim();
+    if (!nameEn && !nameSq) {
+      setError(t("nameRequired"));
+      return;
+    }
+
+    const payload = {
+      name_en: nameEn || null,
+      name_sq: nameSq || null,
+      description_en: collectionDescriptionEn.trim() || null,
+      description_sq: collectionDescriptionSq.trim() || null,
+    };
+
+    try {
+      if (editingCollection) {
+        await updateCollection.mutateAsync({
+          id: editingCollection.id,
+          payload,
+        });
+        toast(t("savedToast"));
+      } else {
+        await createCollection.mutateAsync(payload);
+        toast(t("createdToast"));
+      }
+      resetCollectionForm();
     } catch (err) {
       handleApiError(err, t("unableToSave"));
     }
@@ -551,6 +632,18 @@ export function CatalogManager() {
     }
   };
 
+  const persistCollectionOrder = async (next: CatalogCollection[]) => {
+    const previous = localCollections;
+    setLocalCollections(next);
+    setError(null);
+    try {
+      await reorderCollections.mutateAsync(next.map((item) => item.id));
+    } catch (err) {
+      setLocalCollections(previous);
+      handleApiError(err, t("unableToReorder"));
+    }
+  };
+
   const persistColorOrder = async (next: CatalogColor[]) => {
     const previous = localColors;
     setLocalColors(next);
@@ -600,6 +693,19 @@ export function CatalogManager() {
     }
   };
 
+  const toggleCollectionActive = async (collection: CatalogCollection) => {
+    setError(null);
+    try {
+      await updateCollection.mutateAsync({
+        id: collection.id,
+        payload: { is_active: !collection.is_active },
+      });
+      toast(collection.is_active ? t("disabledToast") : t("enabledToast"));
+    } catch (err) {
+      handleApiError(err, t("unableToSave"));
+    }
+  };
+
   const toggleColorActive = async (color: CatalogColor) => {
     setError(null);
     try {
@@ -641,6 +747,7 @@ export function CatalogManager() {
 
   const tabs: { id: CatalogTab; label: string }[] = [
     { id: "categories", label: t("tabCategories") },
+    { id: "collections", label: t("tabCollections") },
     { id: "colors", label: t("tabColors") },
     { id: "sizes", label: t("tabSizes") },
     { id: "genders", label: t("tabGenders") },
@@ -811,6 +918,165 @@ export function CatalogManager() {
                           id: category.id,
                           name: [category.name_en, category.name_sq].filter(Boolean).join(" / "),
                           kind: "categories",
+                        });
+                      }}
+                      className="rounded-lg border border-red-300/40 px-3 py-1.5 text-sm text-red-300 transition hover:bg-red-300/10 disabled:opacity-60"
+                    >
+                      {t("delete")}
+                    </button>
+                  </>
+                )}
+              />
+            </>
+          )}
+        </section>
+      ) : null}
+
+      {tab === "collections" ? (
+        <section className="space-y-6">
+          <div className="space-y-4 rounded-2xl border border-white/10 bg-white/3 p-5">
+            <h2 className="font-display text-lg font-semibold text-foreground">
+              {editingCollection ? t("editCollection") : t("addCollection")}
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="collection-name-en" className="mb-2 block text-sm text-muted">
+                  {t("nameEn")}
+                </label>
+                <input
+                  id="collection-name-en"
+                  value={collectionNameEn}
+                  onChange={(event) => setCollectionNameEn(event.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30"
+                />
+              </div>
+              <div>
+                <label htmlFor="collection-name-sq" className="mb-2 block text-sm text-muted">
+                  {t("nameSq")}
+                </label>
+                <input
+                  id="collection-name-sq"
+                  value={collectionNameSq}
+                  onChange={(event) => setCollectionNameSq(event.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="collection-description-en"
+                  className="mb-2 block text-sm text-muted"
+                >
+                  {t("descriptionEn")}
+                </label>
+                <input
+                  id="collection-description-en"
+                  value={collectionDescriptionEn}
+                  onChange={(event) => setCollectionDescriptionEn(event.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="collection-description-sq"
+                  className="mb-2 block text-sm text-muted"
+                >
+                  {t("descriptionSq")}
+                </label>
+                <input
+                  id="collection-description-sq"
+                  value={collectionDescriptionSq}
+                  onChange={(event) => setCollectionDescriptionSq(event.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30"
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => void submitCollection()}
+                className="rounded-xl bg-foreground px-4 py-2.5 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-60"
+              >
+                {editingCollection ? t("save") : t("add")}
+              </button>
+              {editingCollection ? (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={resetCollectionForm}
+                  className="rounded-xl border border-white/15 px-4 py-2.5 text-sm text-foreground transition hover:bg-white/5"
+                >
+                  {t("cancel")}
+                </button>
+              ) : null}
+            </div>
+          </div>
+
+          {collectionsQuery.isLoading ? (
+            <ListRowsSkeleton rows={3} />
+          ) : collectionsQuery.isError ? (
+            <p className="text-sm text-red-300">{t("unableToLoad")}</p>
+          ) : localCollections.length === 0 ? (
+            <p className="text-sm text-muted">{t("emptyCollections")}</p>
+          ) : (
+            <>
+              <p className="text-xs text-muted">{t("dragHint")}</p>
+              <SortableList
+                items={localCollections}
+                disabled={pending}
+                {...sortControls}
+                onReorder={(next) => void persistCollectionOrder(next)}
+                renderContent={(collection) => (
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {[collection.name_en, collection.name_sq]
+                        .filter(Boolean)
+                        .join(" / ")}
+                    </p>
+                    <p className="mt-1 text-xs text-muted">{collection.slug}</p>
+                    {collection.description_en || collection.description_sq ? (
+                      <p className="mt-1 text-sm text-muted">
+                        {[collection.description_en, collection.description_sq]
+                          .filter(Boolean)
+                          .join(" / ")}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+                renderActions={(collection) => (
+                  <>
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => {
+                        setEditingCollection(collection);
+                        setCollectionNameEn(collection.name_en ?? "");
+                        setCollectionNameSq(collection.name_sq ?? "");
+                        setCollectionDescriptionEn(collection.description_en ?? "");
+                        setCollectionDescriptionSq(collection.description_sq ?? "");
+                      }}
+                      className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-muted transition hover:bg-white/5 hover:text-foreground disabled:opacity-60"
+                    >
+                      {t("edit")}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => void toggleCollectionActive(collection)}
+                      className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-muted transition hover:bg-white/5 hover:text-foreground disabled:opacity-60"
+                    >
+                      {collection.is_active ? t("disable") : t("enable")}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => {
+                        setPendingDelete({
+                          id: collection.id,
+                          name: [collection.name_en, collection.name_sq]
+                            .filter(Boolean)
+                            .join(" / "),
+                          kind: "collections",
                         });
                       }}
                       className="rounded-lg border border-red-300/40 px-3 py-1.5 text-sm text-red-300 transition hover:bg-red-300/10 disabled:opacity-60"

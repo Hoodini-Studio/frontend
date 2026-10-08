@@ -174,10 +174,14 @@ export function usePlaceCheckoutMutation() {
   });
 }
 
-export function useMyOrders() {
+export function useMyOrders(params?: { page?: number; per_page?: number }) {
+  const page = params?.page ?? 1;
+  const perPage = params?.per_page ?? 10;
+
   return useQuery({
-    queryKey: ["orders", "mine"],
-    queryFn: async ({ signal }) => (await listMyOrders({ signal })).data,
+    queryKey: ["orders", "mine", { page, perPage }],
+    queryFn: async ({ signal }) =>
+      listMyOrders({ page, per_page: perPage, signal }),
   });
 }
 

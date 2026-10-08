@@ -19,6 +19,7 @@ export type ProductSort = "newest" | "price_asc" | "price_desc";
 export type PublishedProductFilters = {
   search?: string;
   category?: string[];
+  collection?: string[];
   color?: string[];
   size?: string[];
   gender?: string[];
@@ -46,6 +47,7 @@ export function listPublishedProducts(params: PublishedProductFilters = {}) {
   }
 
   setFacetParam(query, "category", params.category);
+  setFacetParam(query, "collection", params.collection);
   setFacetParam(query, "color", params.color);
   setFacetParam(query, "size", params.size);
   setFacetParam(query, "gender", params.gender);

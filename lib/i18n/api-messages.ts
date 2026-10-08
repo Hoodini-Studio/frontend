@@ -35,6 +35,8 @@ export const API_MESSAGE_KEYS = {
   "The preferred locale field is required.": "preferredLocaleRequired",
   "The selected preferred locale is invalid.": "preferredLocaleInvalid",
   "At least one product image is required.": "atLeastOneProductImageRequired",
+  "The terms accepted field must be accepted.": "termsAcceptedRequired",
+  "The terms accepted must be accepted.": "termsAcceptedRequired",
 
   "Invalid coupon code.": "couponCodeInvalid",
   "Coupon is inactive.": "couponInactive",

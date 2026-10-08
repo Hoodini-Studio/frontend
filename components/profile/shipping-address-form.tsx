@@ -8,6 +8,7 @@ import {
   useUpdateShippingProfileMutation,
 } from "@/hooks/use-commerce";
 import type { CountryCode } from "@/types/commerce";
+import { Select } from "@/components/ui/select";
 
 export function ShippingAddressForm() {
   const t = useTranslations("settings");
@@ -69,19 +70,19 @@ export function ShippingAddressForm() {
           <label className="mb-2 block text-sm text-muted" htmlFor="settings-country">
             {t("country")}
           </label>
-          <select
+          <Select
             id="settings-country"
             value={countryCode}
-            onChange={(e) => setCountryCode(e.target.value as CountryCode | "")}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none focus:border-white/30"
-          >
-            <option value="">{t("countryPlaceholder")}</option>
-            {(zonesQuery.data ?? []).map((zone) => (
-              <option key={zone.id} value={zone.country_code}>
-                {zone.name_en}
-              </option>
-            ))}
-          </select>
+            onChange={(next) => setCountryCode(next as CountryCode | "")}
+            placeholder={t("countryPlaceholder")}
+            options={[
+              { value: "", label: t("countryPlaceholder") },
+              ...(zonesQuery.data ?? []).map((zone) => ({
+                value: zone.country_code,
+                label: zone.name_en,
+              })),
+            ]}
+          />
         </div>
         <div>
           <label className="mb-2 block text-sm text-muted" htmlFor="settings-city">

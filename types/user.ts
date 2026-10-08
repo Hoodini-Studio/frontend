@@ -12,6 +12,7 @@ export type User = {
   marketing_new_drops: boolean;
   marketing_studio_updates: boolean;
   marketing_prefs_updated_at: string | null;
+  terms_accepted_at: string | null;
   avatar_url?: string | null;
   roles: string[];
   created_at: string;

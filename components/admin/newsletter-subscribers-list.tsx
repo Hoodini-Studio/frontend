@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { downloadAdminNewsletterEmails, listAdminNewsletter } from "@/lib/api/newsletter";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { Select } from "@/components/ui/select";
 
 function formatDate(value: string | null, locale: string): string {
   if (!value) {
@@ -103,19 +104,20 @@ export function NewsletterSubscribersList() {
           <label htmlFor="newsletter-status" className="mb-2 block text-sm text-muted">
             {t("status")}
           </label>
-          <select
+          <Select
             id="newsletter-status"
             value={status}
-            onChange={(event) => {
+            onChange={(next) => {
               setPage(1);
-              setStatus(event.target.value as "" | "active" | "unsubscribed");
+              setStatus(next as "" | "active" | "unsubscribed");
             }}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30 sm:w-44"
-          >
-            <option value="">{t("statusAll")}</option>
-            <option value="active">{t("statusActive")}</option>
-            <option value="unsubscribed">{t("statusUnsubscribed")}</option>
-          </select>
+            className="sm:w-44"
+            options={[
+              { value: "", label: t("statusAll") },
+              { value: "active", label: t("statusActive") },
+              { value: "unsubscribed", label: t("statusUnsubscribed") },
+            ]}
+          />
         </div>
         <button
           type="button"

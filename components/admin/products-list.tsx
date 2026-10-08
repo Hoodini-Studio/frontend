@@ -16,6 +16,7 @@ import type { Product, ProductStatus } from "@/types/product";
 import { localizedName } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { Select } from "@/components/ui/select";
 
 type PendingDelete = {
   id: string;
@@ -95,19 +96,20 @@ export function ProductsList() {
             <label htmlFor="status" className="mb-2 block text-sm text-muted">
               {t("status")}
             </label>
-            <select
+            <Select
               id="status"
               value={status}
-              onChange={(event) => {
+              onChange={(next) => {
                 setPage(1);
-                setStatus(event.target.value as ProductStatus | "");
+                setStatus(next as ProductStatus | "");
               }}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30 sm:w-44"
-            >
-              <option value="">{t("statusAll")}</option>
-              <option value="draft">{t("statusDraft")}</option>
-              <option value="published">{t("statusPublished")}</option>
-            </select>
+              className="sm:w-44"
+              options={[
+                { value: "", label: t("statusAll") },
+                { value: "draft", label: t("statusDraft") },
+                { value: "published", label: t("statusPublished") },
+              ]}
+            />
           </div>
           <button
             type="button"

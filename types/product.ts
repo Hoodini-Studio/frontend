@@ -33,6 +33,7 @@ export type Product = {
   published_at: string | null;
   images: ProductImage[];
   categories?: ProductTaxonomyItem[];
+  collections?: ProductTaxonomyItem[];
   colors?: ProductColorItem[];
   sizes?: ProductTaxonomyItem[];
   genders?: ProductTaxonomyItem[];
@@ -63,6 +64,7 @@ export type ProductInput = {
   status: ProductStatus;
   slug?: string | null;
   category_ids?: string[];
+  collection_ids?: string[];
   color_ids?: string[];
   size_ids?: string[];
   gender_ids?: string[];

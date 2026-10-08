@@ -14,7 +14,7 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
   const t = useTranslations("common");
 
   return (
-    <main className="flex min-h-full items-center justify-center px-6 py-16">
+    <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-md animate-fade-in-up rounded-2xl border border-white/10 bg-white/3 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-sm">
         <div className="mb-8 space-y-2 text-center">
           <Link

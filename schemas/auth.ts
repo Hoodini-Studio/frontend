@@ -15,6 +15,9 @@ export function createRegisterSchema(t: TranslateFn) {
       name: z.string().min(1, t("nameRequired")),
       password: z.string().min(8, t("passwordMin")),
       password_confirmation: z.string().min(1, t("confirmPasswordRequired")),
+      terms_accepted: z.boolean().refine((value) => value === true, {
+        message: t("termsRequired"),
+      }),
     })
     .refine((data) => data.password === data.password_confirmation, {
       message: t("passwordsDoNotMatch"),

@@ -12,6 +12,7 @@ import { formatEuroFromCents } from "@/lib/money";
 import { useToast } from "@/providers/toast-provider";
 import type { CountryCode, OrderStatus, PaymentStatus } from "@/types/commerce";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { Select } from "@/components/ui/select";
 
 const STATUSES: OrderStatus[] = [
   "pending",
@@ -66,41 +67,42 @@ export function OrdersList() {
           <label className="mb-2 block text-sm text-muted" htmlFor="status">
             {t("status")}
           </label>
-          <select
+          <Select
             id="status"
             value={status}
-            onChange={(e) => {
+            onChange={(next) => {
               setPage(1);
-              setStatus(e.target.value as OrderStatus | "");
+              setStatus(next as OrderStatus | "");
             }}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none focus:border-white/30 sm:w-40"
-          >
-            <option value="">{t("statusAll")}</option>
-            {STATUSES.map((value) => (
-              <option key={value} value={value}>
-                {t(`status_${value}`)}
-              </option>
-            ))}
-          </select>
+            className="sm:w-40"
+            options={[
+              { value: "", label: t("statusAll") },
+              ...STATUSES.map((value) => ({
+                value,
+                label: t(`status_${value}`),
+              })),
+            ]}
+          />
         </div>
         <div>
           <label className="mb-2 block text-sm text-muted" htmlFor="country">
             {t("country")}
           </label>
-          <select
+          <Select
             id="country"
             value={country}
-            onChange={(e) => {
+            onChange={(next) => {
               setPage(1);
-              setCountry(e.target.value as CountryCode | "");
+              setCountry(next as CountryCode | "");
             }}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none focus:border-white/30 sm:w-32"
-          >
-            <option value="">{t("countryAll")}</option>
-            <option value="XK">XK</option>
-            <option value="AL">AL</option>
-            <option value="MK">MK</option>
-          </select>
+            className="sm:w-32"
+            options={[
+              { value: "", label: t("countryAll") },
+              { value: "XK", label: "XK" },
+              { value: "AL", label: "AL" },
+              { value: "MK", label: "MK" },
+            ]}
+          />
         </div>
         <button
           type="button"
@@ -144,45 +146,44 @@ export function OrdersList() {
                     {formatEuroFromCents(order.total_cents)}
                   </td>
                   <td className="px-4 py-3">
-                    <select
+                    <Select
                       value={order.status}
                       disabled={pending}
-                      onChange={(e) => {
+                      size="sm"
+                      onChange={(next) => {
                         void updateStatus
                           .mutateAsync({
                             id: order.id,
-                            status: e.target.value as OrderStatus,
+                            status: next as OrderStatus,
                           })
                           .then(() => toast(t("updatedToast")))
                           .catch(() => toast(t("unableToUpdate"), { variant: "error" }));
                       }}
-                      className="rounded-lg border border-white/15 bg-black/40 px-2 py-1.5 text-sm text-foreground"
-                    >
-                      {STATUSES.map((value) => (
-                        <option key={value} value={value}>
-                          {t(`status_${value}`)}
-                        </option>
-                      ))}
-                    </select>
+                      options={STATUSES.map((value) => ({
+                        value,
+                        label: t(`status_${value}`),
+                      }))}
+                    />
                   </td>
                   <td className="px-4 py-3">
-                    <select
+                    <Select
                       value={order.payment_status}
                       disabled={pending}
-                      onChange={(e) => {
+                      size="sm"
+                      onChange={(next) => {
                         void updatePayment
                           .mutateAsync({
                             id: order.id,
-                            payment_status: e.target.value as PaymentStatus,
+                            payment_status: next as PaymentStatus,
                           })
                           .then(() => toast(t("updatedToast")))
                           .catch(() => toast(t("unableToUpdate"), { variant: "error" }));
                       }}
-                      className="rounded-lg border border-white/15 bg-black/40 px-2 py-1.5 text-sm text-foreground"
-                    >
-                      <option value="unpaid">{t("payment_unpaid")}</option>
-                      <option value="paid">{t("payment_paid")}</option>
-                    </select>
+                      options={[
+                        { value: "unpaid", label: t("payment_unpaid") },
+                        { value: "paid", label: t("payment_paid") },
+                      ]}
+                    />
                   </td>
                   <td className="px-4 py-3">
                     <Link

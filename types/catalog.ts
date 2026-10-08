@@ -13,6 +13,21 @@ export type CatalogCategory = {
   updated_at: string;
 };
 
+export type CatalogCollection = {
+  id: string;
+  name: string;
+  name_en: string | null;
+  name_sq: string | null;
+  slug: string;
+  description: string | null;
+  description_en: string | null;
+  description_sq: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CatalogColor = {
   id: string;
   name: string;
@@ -49,11 +64,22 @@ export type CatalogGender = {
 };
 
 export type CategoryListResponse = { data: CatalogCategory[] };
+export type CollectionListResponse = { data: CatalogCollection[] };
 export type ColorListResponse = { data: CatalogColor[] };
 export type SizeListResponse = { data: CatalogSize[] };
 export type GenderListResponse = { data: CatalogGender[] };
 
 export type CategoryInput = {
+  name_en?: string | null;
+  name_sq?: string | null;
+  slug?: string | null;
+  description_en?: string | null;
+  description_sq?: string | null;
+  sort_order?: number;
+  is_active?: boolean;
+};
+
+export type CollectionInput = {
   name_en?: string | null;
   name_sq?: string | null;
   slug?: string | null;

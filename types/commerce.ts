@@ -134,6 +134,7 @@ export type CheckoutInput = {
   notes?: string | null;
   payment_method: PaymentMethod;
   coupon_code?: string | null;
+  terms_accepted?: boolean;
 };
 
 export type ShippingProfileInput = {

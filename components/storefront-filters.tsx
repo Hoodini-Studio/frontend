@@ -12,17 +12,19 @@ import {
 } from "@/lib/money";
 import type {
   CatalogCategory,
+  CatalogCollection,
   CatalogColor,
   CatalogGender,
   CatalogSize,
 } from "@/types/catalog";
 import type { StorefrontFilterState } from "@/hooks/use-storefront-filters";
 
-type FacetKey = "category" | "color" | "size" | "gender";
+type FacetKey = "category" | "collection" | "color" | "size" | "gender";
 
 type StorefrontFiltersProps = {
   filters: StorefrontFilterState;
   categories: CatalogCategory[];
+  collections: CatalogCollection[];
   colors: CatalogColor[];
   sizes: CatalogSize[];
   genders: CatalogGender[];
@@ -123,6 +125,7 @@ function PriceCentsInput({
 export function StorefrontFilters({
   filters,
   categories,
+  collections,
   colors,
   sizes,
   genders,
@@ -185,6 +188,35 @@ export function StorefrontFilters({
                     type="button"
                     aria-pressed={active}
                     onClick={() => onToggle("category", category.slug)}
+                    className={`block w-full py-1.5 text-left text-sm transition ${
+                      active
+                        ? "text-foreground underline decoration-white/40 underline-offset-4"
+                        : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+
+      {collections.length > 0 ? (
+        <section className="space-y-3">
+          <SectionLabel>{t("collectionLabel")}</SectionLabel>
+          <ul className="space-y-1">
+            {collections.map((collection) => {
+              const active = filters.collection.includes(collection.slug);
+              const label = localizedName(collection, locale);
+
+              return (
+                <li key={collection.id}>
+                  <button
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => onToggle("collection", collection.slug)}
                     className={`block w-full py-1.5 text-left text-sm transition ${
                       active
                         ? "text-foreground underline decoration-white/40 underline-offset-4"

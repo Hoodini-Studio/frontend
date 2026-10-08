@@ -111,8 +111,25 @@ export function deleteAdminCoupon(id: string) {
   });
 }
 
-export function listMyOrders(params?: { signal?: AbortSignal }) {
-  return apiRequest<{ data: Order[] }>("/api/orders", {
+export function listMyOrders(params?: {
+  page?: number;
+  per_page?: number;
+  signal?: AbortSignal;
+}) {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.per_page) query.set("per_page", String(params.per_page));
+  const qs = query.toString();
+
+  return apiRequest<{
+    data: Order[];
+    meta?: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    };
+  }>(`/api/orders${qs ? `?${qs}` : ""}`, {
     signal: params?.signal,
   });
 }

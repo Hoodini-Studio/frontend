@@ -7,6 +7,7 @@ import type { ProductSort } from "@/lib/api/products";
 export type StorefrontFilterState = {
   search: string;
   category: string[];
+  collection: string[];
   color: string[];
   size: string[];
   gender: string[];
@@ -15,7 +16,7 @@ export type StorefrontFilterState = {
   sort: ProductSort;
 };
 
-type FacetKey = "category" | "color" | "size" | "gender";
+type FacetKey = "category" | "collection" | "color" | "size" | "gender";
 
 const SORT_VALUES: ProductSort[] = ["newest", "price_asc", "price_desc"];
 
@@ -75,6 +76,9 @@ function buildSearchParams(state: StorefrontFilterState): string {
   if (state.category.length) {
     params.set("category", state.category.join(","));
   }
+  if (state.collection.length) {
+    params.set("collection", state.collection.join(","));
+  }
   if (state.color.length) {
     params.set("color", state.color.join(","));
   }
@@ -106,6 +110,7 @@ export function useStorefrontFilters() {
     () => ({
       search: searchParams.get("q")?.trim() ?? "",
       category: parseList(searchParams.get("category")),
+      collection: parseList(searchParams.get("collection")),
       color: parseList(searchParams.get("color")),
       size: parseList(searchParams.get("size")),
       gender: parseList(searchParams.get("gender")),
@@ -169,6 +174,7 @@ export function useStorefrontFilters() {
     replaceFilters({
       search: "",
       category: [],
+      collection: [],
       color: [],
       size: [],
       gender: [],
@@ -181,6 +187,7 @@ export function useStorefrontFilters() {
   const activeCount =
     (filters.search ? 1 : 0) +
     filters.category.length +
+    filters.collection.length +
     filters.color.length +
     filters.size.length +
     filters.gender.length +

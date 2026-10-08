@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { useDeleteProductImageMutation } from "@/hooks/use-products";
 import {
   useAdminCategories,
+  useAdminCollections,
   useAdminColors,
   useAdminGenders,
   useAdminSizes,
@@ -78,6 +79,9 @@ export function ProductForm({ product }: ProductFormProps) {
   const [categoryIds, setCategoryIds] = useState<string[]>(
     () => product?.categories?.map((item) => item.id) ?? [],
   );
+  const [collectionIds, setCollectionIds] = useState<string[]>(
+    () => product?.collections?.map((item) => item.id) ?? [],
+  );
   const [colorIds, setColorIds] = useState<string[]>(
     () => product?.colors?.map((item) => item.id) ?? [],
   );
@@ -90,6 +94,7 @@ export function ProductForm({ product }: ProductFormProps) {
   const saveLockRef = useRef(false);
   const deleteImageMutation = useDeleteProductImageMutation(product?.id ?? "");
   const categoriesQuery = useAdminCategories();
+  const collectionsQuery = useAdminCollections();
   const colorsQuery = useAdminColors();
   const sizesQuery = useAdminSizes();
   const gendersQuery = useAdminGenders();
@@ -115,6 +120,7 @@ export function ProductForm({ product }: ProductFormProps) {
       queryClient.invalidateQueries({ queryKey: ["admin", "products"] }),
       queryClient.invalidateQueries({ queryKey: ["products", "published"] }),
       queryClient.invalidateQueries({ queryKey: ["admin", "categories"] }),
+      queryClient.invalidateQueries({ queryKey: ["admin", "collections"] }),
       queryClient.invalidateQueries({ queryKey: ["admin", "colors"] }),
       queryClient.invalidateQueries({ queryKey: ["admin", "sizes"] }),
       queryClient.invalidateQueries({ queryKey: ["admin", "genders"] }),
@@ -332,6 +338,7 @@ export function ProductForm({ product }: ProductFormProps) {
           price: priceCents,
           status,
           category_ids: categoryIds,
+          collection_ids: collectionIds,
           color_ids: colorIds,
           size_ids: sizeIds,
           gender_ids: genderIds,
@@ -492,6 +499,40 @@ export function ProductForm({ product }: ProductFormProps) {
                     }`}
                   >
                     {[category.name_en, category.name_sq].filter(Boolean).join(" / ") || category.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm text-muted">{t("collections")}</p>
+          {collectionsQuery.isLoading ? (
+            <ChipGroupSkeleton count={5} />
+          ) : (collectionsQuery.data?.data.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted">{t("taxonomyEmpty")}</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {collectionsQuery.data?.data.map((collection) => {
+                const selected = collectionIds.includes(collection.id);
+                return (
+                  <button
+                    key={collection.id}
+                    type="button"
+                    disabled={pending}
+                    onClick={() =>
+                      toggleId(collectionIds, collection.id, setCollectionIds)
+                    }
+                    className={`rounded-lg border px-3 py-2 text-sm transition ${
+                      selected
+                        ? "border-white/40 bg-white/10 text-foreground"
+                        : "border-white/10 text-muted hover:border-white/25 hover:text-foreground"
+                    }`}
+                  >
+                    {[collection.name_en, collection.name_sq]
+                      .filter(Boolean)
+                      .join(" / ") || collection.name}
                   </button>
                 );
               })}

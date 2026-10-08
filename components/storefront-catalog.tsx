@@ -8,6 +8,7 @@ import { StorefrontFilterSheet } from "@/components/storefront-filter-sheet";
 import { StorefrontFilters } from "@/components/storefront-filters";
 import {
   usePublicCategories,
+  usePublicCollections,
   usePublicColors,
   usePublicGenders,
   usePublicSizes,
@@ -18,6 +19,7 @@ import { formatEuroFromCents } from "@/lib/money";
 import { localizedName } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { ProductGridSkeleton } from "@/components/ui/product-grid-skeleton";
+import { Select } from "@/components/ui/select";
 import { SkeletonBlock } from "@/components/ui/skeleton-block";
 import { FavouriteButton } from "@/components/favourite-button";
 import { isAdmin } from "@/lib/auth/roles";
@@ -25,6 +27,7 @@ import { useCurrentUser } from "@/hooks/use-auth";
 
 const HOME_PRODUCT_LIMIT = 48;
 const EMPTY_CATEGORIES: never[] = [];
+const EMPTY_COLLECTIONS: never[] = [];
 const EMPTY_COLORS: never[] = [];
 const EMPTY_SIZES: never[] = [];
 const EMPTY_GENDERS: never[] = [];
@@ -70,11 +73,13 @@ function StorefrontCatalogContent() {
   }, [searchDraft, filters.search, setSearch]);
 
   const categoriesQuery = usePublicCategories();
+  const collectionsQuery = usePublicCollections();
   const colorsQuery = usePublicColors();
   const sizesQuery = usePublicSizes();
   const gendersQuery = usePublicGenders();
 
   const categories = categoriesQuery.data?.data ?? EMPTY_CATEGORIES;
+  const collections = collectionsQuery.data?.data ?? EMPTY_COLLECTIONS;
   const colors = colorsQuery.data?.data ?? EMPTY_COLORS;
   const sizes = sizesQuery.data?.data ?? EMPTY_SIZES;
   const genders = gendersQuery.data?.data ?? EMPTY_GENDERS;
@@ -83,6 +88,7 @@ function StorefrontCatalogContent() {
     usePublishedProducts({
       search: filters.search || undefined,
       category: filters.category,
+      collection: filters.collection,
       color: filters.color,
       size: filters.size,
       gender: filters.gender,
@@ -131,6 +137,15 @@ function StorefrontCatalogContent() {
       });
     }
 
+    for (const slug of filters.collection) {
+      const item = collections.find((entry) => entry.slug === slug);
+      chips.push({
+        key: `collection-${slug}`,
+        label: item ? localizedName(item, locale) : slug,
+        onRemove: () => removeFacet("collection", slug),
+      });
+    }
+
     for (const slug of filters.gender) {
       const item = genders.find((entry) => entry.slug === slug);
       chips.push({
@@ -162,6 +177,7 @@ function StorefrontCatalogContent() {
   }, [
     filters,
     categories,
+    collections,
     colors,
     sizes,
     genders,
@@ -216,21 +232,17 @@ function StorefrontCatalogContent() {
 
         <label className="ml-auto flex items-center gap-2 text-sm text-muted">
           <span className="sr-only sm:not-sr-only">{t("sortLabel")}</span>
-          <select
+          <Select
             value={filters.sort}
-            onChange={(event) => setSort(event.target.value as ProductSort)}
-            className="appearance-none border-0 bg-transparent py-1 pr-6 text-foreground outline-none"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a3a3a3' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E\")",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "right center",
-            }}
-          >
-            <option value="newest">{t("sortNewest")}</option>
-            <option value="price_asc">{t("sortPriceAsc")}</option>
-            <option value="price_desc">{t("sortPriceDesc")}</option>
-          </select>
+            onChange={(next) => setSort(next as ProductSort)}
+            variant="ghost"
+            aria-label={t("sortLabel")}
+            options={[
+              { value: "newest", label: t("sortNewest") },
+              { value: "price_asc", label: t("sortPriceAsc") },
+              { value: "price_desc", label: t("sortPriceDesc") },
+            ]}
+          />
         </label>
       </div>
 
@@ -239,6 +251,7 @@ function StorefrontCatalogContent() {
           <StorefrontFilters
             filters={filters}
             categories={categories}
+            collections={collections}
             colors={colors}
             sizes={sizes}
             genders={genders}
@@ -372,6 +385,7 @@ function StorefrontCatalogContent() {
         onClose={() => setFiltersOpen(false)}
         filters={filters}
         categories={categories}
+        collections={collections}
         colors={colors}
         sizes={sizes}
         genders={genders}

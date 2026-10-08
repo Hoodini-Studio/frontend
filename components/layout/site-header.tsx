@@ -135,13 +135,13 @@ export function SiteHeader() {
             <>
               <Link
                 href="/login"
-                className="text-muted transition hover:text-foreground"
+                className="whitespace-nowrap text-muted transition hover:text-foreground"
               >
                 {t("signIn")}
               </Link>
               <Link
                 href="/register"
-                className="rounded-lg border border-white/10 px-4 py-2 text-foreground transition hover:border-white/25 hover:bg-white/5"
+                className="whitespace-nowrap rounded-lg border border-white/10 px-4 py-2 text-foreground transition hover:border-white/25 hover:bg-white/5"
               >
                 {t("register")}
               </Link>

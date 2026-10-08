@@ -7,6 +7,7 @@ import {
   useCurrentUser,
   useUpdatePreferredLocaleMutation,
 } from "@/hooks/use-auth";
+import { clearLocaleSyncAttempt } from "@/components/i18n/locale-sync";
 import { setLocaleCookie } from "@/lib/i18n/cookie";
 import { type AppLocale, locales } from "@/lib/i18n/config";
 import { SettingsShell } from "@/components/profile/settings-shell";
@@ -34,6 +35,7 @@ export function LanguageSettings() {
     try {
       await updateLocaleMutation.mutateAsync(locale);
       setLocaleCookie(locale);
+      clearLocaleSyncAttempt();
       setLocaleSuccess(true);
       router.refresh();
     } catch {

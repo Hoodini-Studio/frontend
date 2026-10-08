@@ -18,6 +18,7 @@ import { useToast } from "@/providers/toast-provider";
 import type { Coupon, CouponType } from "@/types/commerce";
 import { DateTimePicker } from "@/components/ui/date-picker";
 import { ListRowsSkeleton } from "@/components/ui/list-rows-skeleton";
+import { Select } from "@/components/ui/select";
 
 const inputClass =
   "w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none focus:border-white/30";
@@ -287,15 +288,15 @@ export function CouponsManager() {
             <label className="mb-2 block text-sm text-muted" htmlFor="coupon-type">
               {t("type")}
             </label>
-            <select
+            <Select
               id="coupon-type"
               value={type}
-              onChange={(e) => setType(e.target.value as CouponType)}
-              className={inputClass}
-            >
-              <option value="percent">{t("typePercent")}</option>
-              <option value="fixed">{t("typeFixed")}</option>
-            </select>
+              onChange={(next) => setType(next as CouponType)}
+              options={[
+                { value: "percent", label: t("typePercent") },
+                { value: "fixed", label: t("typeFixed") },
+              ]}
+            />
           </div>
           {type === "percent" ? (
             <div>

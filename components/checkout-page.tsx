@@ -16,6 +16,7 @@ import { ApiError } from "@/lib/api/client";
 import { useApiMessageTranslator } from "@/hooks/use-api-message-translator";
 import type { CountryCode, PaymentMethod } from "@/types/commerce";
 import { CheckoutSkeleton } from "@/components/ui/checkout-skeleton";
+import { Select } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 
 type FieldKey =
@@ -28,7 +29,8 @@ type FieldKey =
   | "postal_code"
   | "notes"
   | "payment_method"
-  | "coupon_code";
+  | "coupon_code"
+  | "terms_accepted";
 
 type FieldErrors = Partial<Record<FieldKey, string>>;
 
@@ -43,6 +45,7 @@ const FIELD_ORDER: FieldKey[] = [
   "notes",
   "coupon_code",
   "payment_method",
+  "terms_accepted",
 ];
 
 const API_FIELD_MAP: Record<string, FieldKey> = {
@@ -56,6 +59,7 @@ const API_FIELD_MAP: Record<string, FieldKey> = {
   notes: "notes",
   payment_method: "payment_method",
   coupon_code: "coupon_code",
+  terms_accepted: "terms_accepted",
 };
 
 function isValidEmail(value: string): boolean {
@@ -108,6 +112,7 @@ export function CheckoutPageContent() {
   const [couponDraft, setCouponDraft] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [prefilledFromUserId, setPrefilledFromUserId] = useState<string | null>(null);
@@ -133,6 +138,7 @@ export function CheckoutPageContent() {
   const zones = zonesQuery.data ?? [];
   const isLoggedIn = Boolean(user);
   const accountEmail = user?.email ?? "";
+  const needsTermsConsent = !user || !user.terms_accepted_at;
 
   const clearFieldError = (field: FieldKey) => {
     setFieldErrors((current) => {
@@ -180,6 +186,9 @@ export function CheckoutPageContent() {
     if (!postalCode.trim()) {
       next.postal_code = t("checkoutPostalRequired");
     }
+    if (needsTermsConsent && !termsAccepted) {
+      next.terms_accepted = t("checkoutTermsRequired");
+    }
 
     return next;
   };
@@ -206,6 +215,7 @@ export function CheckoutPageContent() {
         notes: notes.trim() || null,
         payment_method: paymentMethod,
         coupon_code: appliedCoupon,
+        ...(needsTermsConsent ? { terms_accepted: true } : {}),
       });
 
       router.push(`/checkout/success?number=${encodeURIComponent(response.data.number)}`);
@@ -325,23 +335,23 @@ export function CheckoutPageContent() {
             <FieldLabel htmlFor="country_code" required>
               {t("checkoutCountry")}
             </FieldLabel>
-            <select
+            <Select
               id="country_code"
               value={countryCode}
-              aria-invalid={Boolean(fieldErrors.country_code)}
-              onChange={(e) => {
-                setCountryCode(e.target.value as CountryCode | "");
+              invalid={Boolean(fieldErrors.country_code)}
+              onChange={(next) => {
+                setCountryCode(next as CountryCode | "");
                 clearFieldError("country_code");
               }}
-              className={fieldClassName(Boolean(fieldErrors.country_code))}
-            >
-              <option value="">{t("checkoutCountryPlaceholder")}</option>
-              {zones.map((zone) => (
-                <option key={zone.id} value={zone.country_code}>
-                  {zone.name_en}
-                </option>
-              ))}
-            </select>
+              placeholder={t("checkoutCountryPlaceholder")}
+              options={[
+                { value: "", label: t("checkoutCountryPlaceholder") },
+                ...zones.map((zone) => ({
+                  value: zone.country_code,
+                  label: zone.name_en,
+                })),
+              ]}
+            />
             {fieldErrors.country_code ? (
               <p className="mt-2 text-sm text-red-300">{fieldErrors.country_code}</p>
             ) : null}
@@ -547,6 +557,49 @@ export function CheckoutPageContent() {
             <p className="text-sm text-red-300">{fieldErrors.payment_method}</p>
           ) : null}
         </fieldset>
+
+        {needsTermsConsent ? (
+          <div className="space-y-2">
+            <label className="flex items-start gap-3 text-sm text-muted">
+              <input
+                id="terms_accepted"
+                type="checkbox"
+                checked={termsAccepted}
+                aria-invalid={Boolean(fieldErrors.terms_accepted)}
+                onChange={(e) => {
+                  setTermsAccepted(e.target.checked);
+                  clearFieldError("terms_accepted");
+                }}
+                className="mt-1 h-4 w-4 rounded border-white/20 bg-black/40"
+              />
+              <span>
+                {t.rich("checkoutAgreeTerms", {
+                  terms: (chunks) => (
+                    <Link
+                      href="/terms"
+                      target="_blank"
+                      className="text-foreground underline-offset-4 hover:underline"
+                    >
+                      {chunks}
+                    </Link>
+                  ),
+                  privacy: (chunks) => (
+                    <Link
+                      href="/privacy"
+                      target="_blank"
+                      className="text-foreground underline-offset-4 hover:underline"
+                    >
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </span>
+            </label>
+            {fieldErrors.terms_accepted ? (
+              <p className="text-sm text-red-300">{fieldErrors.terms_accepted}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         <button
           type="button"

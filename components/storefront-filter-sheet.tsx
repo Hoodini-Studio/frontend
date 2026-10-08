@@ -6,18 +6,20 @@ import { StorefrontFilters } from "@/components/storefront-filters";
 import type { StorefrontFilterState } from "@/hooks/use-storefront-filters";
 import type {
   CatalogCategory,
+  CatalogCollection,
   CatalogColor,
   CatalogGender,
   CatalogSize,
 } from "@/types/catalog";
 
-type FacetKey = "category" | "color" | "size" | "gender";
+type FacetKey = "category" | "collection" | "color" | "size" | "gender";
 
 type StorefrontFilterSheetProps = {
   open: boolean;
   onClose: () => void;
   filters: StorefrontFilterState;
   categories: CatalogCategory[];
+  collections: CatalogCollection[];
   colors: CatalogColor[];
   sizes: CatalogSize[];
   genders: CatalogGender[];
@@ -36,6 +38,7 @@ export function StorefrontFilterSheet({
   onClose,
   filters,
   categories,
+  collections,
   colors,
   sizes,
   genders,
@@ -112,6 +115,7 @@ export function StorefrontFilterSheet({
         <StorefrontFilters
           filters={filters}
           categories={categories}
+          collections={collections}
           colors={colors}
           sizes={sizes}
           genders={genders}

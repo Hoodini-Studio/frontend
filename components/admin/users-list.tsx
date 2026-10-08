@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useAdminUsers } from "@/hooks/use-users";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { Select } from "@/components/ui/select";
 
 function formatRoleLabel(
   role: string,
@@ -84,19 +85,20 @@ export function UsersList() {
           <label htmlFor="user-role" className="mb-2 block text-sm text-muted">
             {t("role")}
           </label>
-          <select
+          <Select
             id="user-role"
             value={role}
-            onChange={(event) => {
+            onChange={(next) => {
               setPage(1);
-              setRole(event.target.value);
+              setRole(next);
             }}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-foreground outline-none transition focus:border-white/30 sm:w-44"
-          >
-            <option value="">{t("roleAll")}</option>
-            <option value="admin">{t("roleAdmin")}</option>
-            <option value="customer">{t("roleCustomer")}</option>
-          </select>
+            className="sm:w-44"
+            options={[
+              { value: "", label: t("roleAll") },
+              { value: "admin", label: t("roleAdmin") },
+              { value: "customer", label: t("roleCustomer") },
+            ]}
+          />
         </div>
         <button
           type="button"

@@ -35,6 +35,7 @@ export function RegisterForm() {
       email: "",
       password: "",
       password_confirmation: "",
+      terms_accepted: false,
     },
   });
 
@@ -58,9 +59,10 @@ export function RegisterForm() {
             field === "name" ||
             field === "email" ||
             field === "password" ||
-            field === "password_confirmation"
+            field === "password_confirmation" ||
+            field === "terms_accepted"
           ) {
-            setError(field, { message: messages[0] });
+            setError(field as keyof RegisterInput, { message: messages[0] });
           }
         });
 
@@ -143,6 +145,41 @@ export function RegisterForm() {
           />
           {errors.password_confirmation ? (
             <p className="text-sm text-red-400">{errors.password_confirmation.message}</p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <label className="flex items-start gap-3 text-sm text-muted">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4 rounded border-white/20 bg-black/40"
+              {...register("terms_accepted")}
+            />
+            <span>
+              {t.rich("agreeTerms", {
+                terms: (chunks) => (
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    className="text-foreground underline-offset-4 hover:underline"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+                privacy: (chunks) => (
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    className="text-foreground underline-offset-4 hover:underline"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </span>
+          </label>
+          {errors.terms_accepted ? (
+            <p className="text-sm text-red-400">{errors.terms_accepted.message}</p>
           ) : null}
         </div>
 

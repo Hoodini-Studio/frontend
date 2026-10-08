@@ -70,8 +70,8 @@ export default async function RootLayout({
       lang={locale}
       className={`${syne.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">
-        <NextIntlClientProvider messages={messages}>
+      <body className="min-h-dvh bg-background text-foreground">
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <QueryProvider>
             <ToastProvider>
               <LocaleSync />

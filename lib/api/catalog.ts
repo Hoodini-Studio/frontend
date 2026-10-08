@@ -1,11 +1,14 @@
 import { apiRequest } from "@/lib/api/client";
 import type {
   CatalogCategory,
+  CatalogCollection,
   CatalogColor,
   CatalogGender,
   CatalogSize,
   CategoryInput,
   CategoryListResponse,
+  CollectionInput,
+  CollectionListResponse,
   ColorInput,
   ColorListResponse,
   GenderInput,
@@ -49,6 +52,49 @@ export function deleteAdminCategory(id: string) {
 
 export function reorderAdminCategories(ids: string[]) {
   return apiRequest<CategoryListResponse>("/api/admin/categories/reorder", {
+    method: "PATCH",
+    body: { ids },
+  });
+}
+
+export function listAdminCollections(init?: { signal?: AbortSignal }) {
+  return apiRequest<CollectionListResponse>("/api/admin/collections", {
+    signal: init?.signal,
+  });
+}
+
+export function listPublicCollections(init?: { signal?: AbortSignal }) {
+  return apiRequest<CollectionListResponse>("/api/collections", {
+    signal: init?.signal,
+  });
+}
+
+export function createAdminCollection(payload: CollectionInput) {
+  return apiRequest<{ data: CatalogCollection }>("/api/admin/collections", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export function updateAdminCollection(
+  id: string,
+  payload: Partial<CollectionInput>,
+) {
+  return apiRequest<{ data: CatalogCollection }>(`/api/admin/collections/${id}`, {
+    method: "PATCH",
+    body: payload,
+  });
+}
+
+export function deleteAdminCollection(id: string) {
+  return apiRequest<{ message: string }>(`/api/admin/collections/${id}`, {
+    method: "DELETE",
+    body: {},
+  });
+}
+
+export function reorderAdminCollections(ids: string[]) {
+  return apiRequest<CollectionListResponse>("/api/admin/collections/reorder", {
     method: "PATCH",
     body: { ids },
   });

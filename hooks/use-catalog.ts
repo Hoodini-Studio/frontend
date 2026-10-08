@@ -3,32 +3,39 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createAdminCategory,
+  createAdminCollection,
   createAdminColor,
   createAdminGender,
   createAdminSize,
   deleteAdminCategory,
+  deleteAdminCollection,
   deleteAdminColor,
   deleteAdminGender,
   deleteAdminSize,
   listAdminCategories,
+  listAdminCollections,
   listAdminColors,
   listAdminGenders,
   listAdminSizes,
   listPublicCategories,
+  listPublicCollections,
   listPublicColors,
   listPublicGenders,
   listPublicSizes,
   reorderAdminCategories,
+  reorderAdminCollections,
   reorderAdminColors,
   reorderAdminGenders,
   reorderAdminSizes,
   updateAdminCategory,
+  updateAdminCollection,
   updateAdminColor,
   updateAdminGender,
   updateAdminSize,
 } from "@/lib/api/catalog";
 import type {
   CategoryInput,
+  CollectionInput,
   ColorInput,
   GenderInput,
   SizeInput,
@@ -38,6 +45,13 @@ export function useAdminCategories() {
   return useQuery({
     queryKey: ["admin", "categories"],
     queryFn: ({ signal }) => listAdminCategories({ signal }),
+  });
+}
+
+export function useAdminCollections() {
+  return useQuery({
+    queryKey: ["admin", "collections"],
+    queryFn: ({ signal }) => listAdminCollections({ signal }),
   });
 }
 
@@ -69,6 +83,13 @@ export function usePublicCategories() {
   });
 }
 
+export function usePublicCollections() {
+  return useQuery({
+    queryKey: ["catalog", "collections"],
+    queryFn: ({ signal }) => listPublicCollections({ signal }),
+  });
+}
+
 export function usePublicColors() {
   return useQuery({
     queryKey: ["catalog", "colors"],
@@ -96,6 +117,7 @@ function useInvalidateCatalog() {
   return async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["admin", "categories"] }),
+      queryClient.invalidateQueries({ queryKey: ["admin", "collections"] }),
       queryClient.invalidateQueries({ queryKey: ["admin", "colors"] }),
       queryClient.invalidateQueries({ queryKey: ["admin", "sizes"] }),
       queryClient.invalidateQueries({ queryKey: ["admin", "genders"] }),
@@ -137,6 +159,48 @@ export function useReorderCategoriesMutation() {
 
   return useMutation({
     mutationFn: (ids: string[]) => reorderAdminCategories(ids),
+    onSuccess: () => invalidate(),
+  });
+}
+
+export function useCreateCollectionMutation() {
+  const invalidate = useInvalidateCatalog();
+
+  return useMutation({
+    mutationFn: (payload: CollectionInput) => createAdminCollection(payload),
+    onSuccess: () => invalidate(),
+  });
+}
+
+export function useUpdateCollectionMutation() {
+  const invalidate = useInvalidateCatalog();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Partial<CollectionInput>;
+    }) => updateAdminCollection(id, payload),
+    onSuccess: () => invalidate(),
+  });
+}
+
+export function useDeleteCollectionMutation() {
+  const invalidate = useInvalidateCatalog();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteAdminCollection(id),
+    onSuccess: () => invalidate(),
+  });
+}
+
+export function useReorderCollectionsMutation() {
+  const invalidate = useInvalidateCatalog();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => reorderAdminCollections(ids),
     onSuccess: () => invalidate(),
   });
 }

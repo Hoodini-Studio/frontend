@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLogoutMutation } from "@/hooks/use-auth";
 import { getUserAvatarUrl, getUserInitials } from "@/lib/auth/user-display";
 import { isAdmin } from "@/lib/auth/roles";
+import { clearLocaleSyncAttempt } from "@/components/i18n/locale-sync";
 import { resetLocaleCookie } from "@/lib/i18n/cookie";
 import type { User } from "@/types/user";
 
@@ -92,6 +93,7 @@ export function UserMenu({ user }: UserMenuProps) {
     setOpen(false);
     await logoutMutation.mutateAsync();
     resetLocaleCookie();
+    clearLocaleSyncAttempt();
     router.push("/login");
     router.refresh();
   };
