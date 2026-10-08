@@ -1,9 +1,10 @@
 import { SkeletonBlock } from "@/components/ui/skeleton-block";
+import { pageShellClass } from "@/lib/layout";
 
 export function AccountSettingsSkeleton() {
   return (
     <main
-      className="mx-auto max-w-2xl px-6 py-10"
+      className={pageShellClass("shell", "py-10")}
       aria-busy="true"
       aria-live="polite"
     >

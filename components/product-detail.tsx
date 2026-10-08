@@ -8,7 +8,7 @@ import { usePublishedProduct } from "@/hooks/use-products";
 import { useAddCartItemMutation } from "@/hooks/use-commerce";
 import { formatEuroFromCents } from "@/lib/money";
 import { ProductCatalogOptions } from "@/components/product-catalog-options";
-import { localizedDescription } from "@/lib/i18n/localized";
+import { localizedDescription, localizedName } from "@/lib/i18n/localized";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { useToast } from "@/providers/toast-provider";
 import { ProductDetailSkeleton } from "@/components/ui/product-detail-skeleton";
@@ -257,6 +257,26 @@ export function ProductDetail({ slug }: ProductDetailProps) {
               <p className="mt-4 text-xl text-foreground">
                 {formatEuroFromCents(product.price)}
               </p>
+
+              {(product.collections?.length ?? 0) > 0 ? (
+                <div className="mt-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                    {t("collectionLabel")}
+                  </p>
+                  <ul className="mt-2 flex flex-wrap gap-2">
+                    {product.collections!.map((collection) => (
+                      <li key={collection.id}>
+                        <Link
+                          href={`/?collection=${encodeURIComponent(collection.slug)}`}
+                          className="inline-flex border border-white/15 px-3 py-1.5 text-sm text-foreground transition hover:border-white/35 hover:bg-white/5"
+                        >
+                          {localizedName(collection, locale)}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
 
               <div className="mt-8">
                 <ProductCatalogOptions

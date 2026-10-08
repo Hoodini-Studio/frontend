@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/auth/roles";
+import { pageShellClass } from "@/lib/layout";
 
 type HubItem = {
   href: string;
@@ -59,7 +60,7 @@ export function SettingsHub() {
   ];
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10 animate-[fade-in-up_0.45s_ease-out]">
+    <main className={pageShellClass("shell", "py-10 animate-[fade-in-up_0.45s_ease-out]")}>
       <div className="mb-10">
         <p className="text-sm uppercase tracking-[0.25em] text-muted">{t("eyebrow")}</p>
         <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">

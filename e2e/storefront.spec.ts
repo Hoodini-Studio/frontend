@@ -22,6 +22,9 @@ test.describe("Storefront", () => {
 
     await expect(page.getByRole("heading", { name: sampleProduct.name })).toBeVisible();
     await expect(page.getByText("45.00 €")).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Anime" }),
+    ).toHaveAttribute("href", "/?collection=anime");
 
     await page.getByRole("button", { name: "Black" }).click();
     await page.getByRole("button", { name: "M", exact: true }).click();

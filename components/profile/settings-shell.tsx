@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { pageShellClass } from "@/lib/layout";
 
 type SettingsShellProps = {
   backLabel: string;
@@ -17,7 +18,7 @@ export function SettingsShell({
   children,
 }: SettingsShellProps) {
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10 animate-[fade-in-up_0.45s_ease-out]">
+    <main className={pageShellClass("shell", "py-10 animate-[fade-in-up_0.45s_ease-out]")}>
       <Link
         href="/account-settings"
         className="inline-flex text-sm text-muted transition hover:text-foreground"
