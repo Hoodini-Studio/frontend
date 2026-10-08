@@ -2,18 +2,18 @@ import type { MetadataRoute } from "next";
 import { getSiteUrl, shouldAllowSearchIndexing } from "@/lib/site";
 
 /**
- * Product URLs come from the public catalog API (`GET /api/products`), which only
- * returns published products. Requires `NEXT_PUBLIC_API_URL` in production so the
+ * Product/pack URLs come from the public catalog APIs, which only return
+ * published items. Requires `NEXT_PUBLIC_API_URL` in production so the
  * Next server can reach the Laravel API at build/runtime (ISR revalidate: 1h).
  */
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-type ProductListPayload = {
+type SlugListPayload = {
   data?: Array<{ slug: string; updated_at?: string }>;
   meta?: { last_page?: number };
 };
 
-async function fetchPublishedProductSlugs(): Promise<
+async function fetchPublishedSlugs(path: string): Promise<
   Array<{ slug: string; updatedAt?: string }>
 > {
   const items: Array<{ slug: string; updatedAt?: string }> = [];
@@ -24,7 +24,7 @@ async function fetchPublishedProductSlugs(): Promise<
 
     do {
       const response = await fetch(
-        `${API_URL}/api/products?per_page=100&page=${page}`,
+        `${API_URL}${path}?per_page=100&page=${page}`,
         {
           headers: { Accept: "application/json" },
           next: { revalidate: 3600 },
@@ -35,16 +35,16 @@ async function fetchPublishedProductSlugs(): Promise<
         break;
       }
 
-      const payload = (await response.json()) as ProductListPayload;
+      const payload = (await response.json()) as SlugListPayload;
       if (!Array.isArray(payload.data)) {
         break;
       }
 
-      for (const product of payload.data) {
-        if (typeof product.slug === "string" && product.slug.length > 0) {
+      for (const row of payload.data) {
+        if (typeof row.slug === "string" && row.slug.length > 0) {
           items.push({
-            slug: product.slug,
-            updatedAt: product.updated_at,
+            slug: row.slug,
+            updatedAt: row.updated_at,
           });
         }
       }
@@ -54,7 +54,7 @@ async function fetchPublishedProductSlugs(): Promise<
       page += 1;
     } while (page <= lastPage && page <= 20);
   } catch {
-    // Keep static routes only — never invent product URLs or fail the sitemap.
+    // Keep static routes only — never invent URLs or fail the sitemap.
   }
 
   return items;
@@ -68,7 +68,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const siteUrl = getSiteUrl();
-  const products = await fetchPublishedProductSlugs();
+  const [products, packs] = await Promise.all([
+    fetchPublishedSlugs("/api/products"),
+    fetchPublishedSlugs("/api/bundles"),
+  ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -95,5 +98,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...productRoutes];
+  const packRoutes: MetadataRoute.Sitemap = packs.map((pack) => ({
+    url: `${siteUrl}/packs/${encodeURIComponent(pack.slug)}`,
+    lastModified: pack.updatedAt ? new Date(pack.updatedAt) : undefined,
+    changeFrequency: "weekly" as const,
+    priority: 0.75,
+  }));
+
+  return [...staticRoutes, ...productRoutes, ...packRoutes];
 }

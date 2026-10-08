@@ -20,10 +20,21 @@ export type ShippingZoneInput = {
   is_active?: boolean;
 };
 
+export type CartItemSelection = {
+  bundle_item_id: string;
+  product_id: string | null;
+  product_name: string | null;
+  quantity: number;
+  color: { id: string; name_en: string | null; name_sq: string | null; hex: string } | null;
+  size: { id: string; name: string } | null;
+};
+
 export type CartItem = {
   id: string;
+  type?: "product" | "bundle";
   quantity: number;
-  product_id: string;
+  product_id: string | null;
+  bundle_id?: string | null;
   name: string;
   slug: string;
   unit_price_cents: number;
@@ -32,6 +43,7 @@ export type CartItem = {
   color: { id: string; name_en: string | null; name_sq: string | null; hex: string } | null;
   size: { id: string; name: string } | null;
   gender: { id: string; name_en: string | null; name_sq: string | null } | null;
+  selections?: CartItemSelection[];
 };
 
 export type Cart = {
@@ -88,6 +100,8 @@ export type PaymentStatus = "unpaid" | "paid";
 export type OrderItem = {
   id: string;
   product_id: string | null;
+  bundle_id?: string | null;
+  bundle_name?: string | null;
   name: string;
   unit_price_cents: number;
   quantity: number;

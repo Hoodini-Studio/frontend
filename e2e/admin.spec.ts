@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { installApiMocks } from "./fixtures/api";
-import { sampleCoupon, sampleOrder, sampleProduct } from "./fixtures/data";
+import { sampleCoupon, sampleOrder, samplePack, sampleProduct } from "./fixtures/data";
 
 test.describe("Admin", () => {
   test("dashboard loads for admin", async ({ page }) => {
@@ -9,6 +9,7 @@ test.describe("Admin", () => {
 
     await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Products" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Packs" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Orders" })).toBeVisible();
   });
 
@@ -23,6 +24,13 @@ test.describe("Admin", () => {
     await page.goto("/admin/products");
 
     await expect(page.getByText(sampleProduct.name)).toBeVisible();
+  });
+
+  test("packs list", async ({ page }) => {
+    await installApiMocks(page, { auth: "admin" });
+    await page.goto("/admin/packs");
+
+    await expect(page.getByText(samplePack.name)).toBeVisible();
   });
 
   test("catalog manager", async ({ page }) => {

@@ -119,6 +119,11 @@ export function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
                     <p className="text-foreground print:text-black">
                       {item.name} × {item.quantity}
                     </p>
+                    {item.bundle_name ? (
+                      <p className="mt-1 text-xs text-muted print:mt-0.5 print:text-[9px] print:text-black/70">
+                        {t("packLabel", { name: item.bundle_name })}
+                      </p>
+                    ) : null}
                     {details ? (
                       <p className="mt-1 text-xs text-muted print:mt-0.5 print:text-[9px] print:text-black/70">
                         {details}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useAdminOrders } from "@/hooks/use-commerce";
+import { useAdminBundles } from "@/hooks/use-bundles";
 import { useAdminProducts } from "@/hooks/use-products";
 import { SkeletonBlock } from "@/components/ui/skeleton-block";
 import { pageShellClass } from "@/lib/layout";
@@ -12,6 +13,9 @@ export function AdminDashboard() {
   const all = useAdminProducts({ perPage: 1 });
   const published = useAdminProducts({ status: "published", perPage: 1 });
   const drafts = useAdminProducts({ status: "draft", perPage: 1 });
+  const allPacks = useAdminBundles({ perPage: 1 });
+  const publishedPacks = useAdminBundles({ status: "published", perPage: 1 });
+  const draftPacks = useAdminBundles({ status: "draft", perPage: 1 });
   const allOrders = useAdminOrders({ per_page: 1 });
   const pendingOrders = useAdminOrders({ status: "pending", per_page: 1 });
   const confirmedOrders = useAdminOrders({ status: "confirmed", per_page: 1 });
@@ -20,6 +24,12 @@ export function AdminDashboard() {
   const publishedCount = published.data?.meta?.total;
   const draftCount = drafts.data?.meta?.total;
   const countsLoading = all.isLoading || published.isLoading || drafts.isLoading;
+
+  const packsTotal = allPacks.data?.meta?.total;
+  const packsPublished = publishedPacks.data?.meta?.total;
+  const packsDrafts = draftPacks.data?.meta?.total;
+  const packsCountsLoading =
+    allPacks.isLoading || publishedPacks.isLoading || draftPacks.isLoading;
 
   const ordersTotal = allOrders.data?.meta?.total;
   const pendingCount = pendingOrders.data?.meta?.total;
@@ -108,6 +118,71 @@ export function AdminDashboard() {
 
                 <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground transition group-hover:gap-3">
                   {t("openProducts")}
+                  <span aria-hidden="true">→</span>
+                </span>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/packs"
+            aria-labelledby="admin-packs-heading"
+            className="group block outline-none transition focus-visible:ring-2 focus-visible:ring-white/25"
+          >
+            <div className="relative overflow-hidden border-t border-white/10 bg-linear-to-br from-white/6 via-white/2 to-transparent px-4 py-8 transition group-hover:from-white/9 sm:px-6 sm:py-10">
+              <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0 max-w-xl">
+                  <h2
+                    id="admin-packs-heading"
+                    className="font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+                  >
+                    {t("packs")}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
+                    {t("packsDescription")}
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
+                    {packsCountsLoading ? (
+                      <div className="flex gap-4">
+                        <SkeletonBlock className="h-4 w-16" />
+                        <SkeletonBlock className="h-4 w-20" />
+                        <SkeletonBlock className="h-4 w-16" />
+                      </div>
+                    ) : (
+                      <>
+                        <span>
+                          <span className="font-medium text-foreground">{packsTotal ?? 0}</span>
+                          {" "}
+                          {t("totalLabel")}
+                        </span>
+                        <span className="text-white/20" aria-hidden="true">
+                          /
+                        </span>
+                        <span>
+                          <span className="font-medium text-emerald-300/90">
+                            {packsPublished ?? 0}
+                          </span>
+                          {" "}
+                          {t("publishedLabel")}
+                        </span>
+                        <span className="text-white/20" aria-hidden="true">
+                          /
+                        </span>
+                        <span>
+                          <span className="font-medium text-amber-200/90">
+                            {packsDrafts ?? 0}
+                          </span>
+                          {" "}
+                          {t("draftLabel")}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground transition group-hover:gap-3">
+                  {t("openPacks")}
                   <span aria-hidden="true">→</span>
                 </span>
               </div>

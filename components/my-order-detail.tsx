@@ -111,6 +111,11 @@ export function MyOrderDetailContent({ orderId }: { orderId: string }) {
                   {item.name}
                   <span className="text-muted"> × {item.quantity}</span>
                 </p>
+                {item.bundle_name ? (
+                  <p className="mt-1 text-xs text-muted">
+                    {t("orderPackLabel", { name: item.bundle_name })}
+                  </p>
+                ) : null}
                 {(item.size_label || item.color_label || item.gender_label) ? (
                   <p className="mt-1 text-xs text-muted">
                     {[item.gender_label, item.color_label, item.size_label]

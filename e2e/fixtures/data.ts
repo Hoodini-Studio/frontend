@@ -1,3 +1,4 @@
+import type { Bundle } from "@/types/bundle";
 import type { User } from "@/types/user";
 import type { Product } from "@/types/product";
 import type { Cart, Coupon, Order, ShippingZone } from "@/types/commerce";
@@ -165,6 +166,87 @@ export const sampleProduct: Product = {
   updated_at: "2026-01-01T00:00:00.000000Z",
 };
 
+export const sampleProductB: Product = {
+  ...sampleProduct,
+  id: "prod-2",
+  name: "Essential Tee",
+  slug: "essential-tee",
+  description: "Everyday tee.",
+  description_en: "Everyday tee.",
+  description_sq: "Bluzë e përditshme.",
+  price: 2500,
+  images: [
+    {
+      id: "img-2",
+      url: "/favicon.ico",
+      sort_order: 0,
+      is_primary: true,
+      created_at: "2026-01-01T00:00:00.000000Z",
+      updated_at: "2026-01-01T00:00:00.000000Z",
+    },
+  ],
+  primary_image_url: "/favicon.ico",
+};
+
+export const samplePack: Bundle = {
+  id: "pack-1",
+  name: "Studio Starter Pack",
+  slug: "studio-starter-pack",
+  description: "Hoodie + tee at a pack price.",
+  description_en: "Hoodie + tee at a pack price.",
+  description_sq: "Hoodie + bluzë me çmim pakete.",
+  price: 6000,
+  suggested_price_cents: 7000,
+  status: "published",
+  published_at: "2026-01-01T00:00:00.000000Z",
+  item_count: 2,
+  primary_image_url: sampleProduct.primary_image_url,
+  items: [
+    {
+      id: "pack-item-1",
+      product_id: sampleProduct.id,
+      quantity: 1,
+      sort_order: 0,
+      product: {
+        id: sampleProduct.id,
+        name: sampleProduct.name,
+        slug: sampleProduct.slug,
+        price: sampleProduct.price,
+        status: "published",
+        primary_image_url: sampleProduct.primary_image_url,
+        colors: sampleProduct.colors,
+        sizes: sampleProduct.sizes,
+      },
+      colors: sampleProduct.colors ?? [],
+      sizes: sampleProduct.sizes ?? [],
+      color_ids: ["color-black"],
+      size_ids: ["size-m"],
+    },
+    {
+      id: "pack-item-2",
+      product_id: sampleProductB.id,
+      quantity: 1,
+      sort_order: 1,
+      product: {
+        id: sampleProductB.id,
+        name: sampleProductB.name,
+        slug: sampleProductB.slug,
+        price: sampleProductB.price,
+        status: "published",
+        primary_image_url: sampleProductB.primary_image_url,
+        colors: sampleProductB.colors,
+        sizes: sampleProductB.sizes,
+      },
+      colors: sampleProductB.colors ?? [],
+      sizes: sampleProductB.sizes ?? [],
+      color_ids: ["color-black"],
+      size_ids: ["size-m"],
+    },
+  ],
+  created_at: "2026-01-01T00:00:00.000000Z",
+  updated_at: "2026-01-01T00:00:00.000000Z",
+};
+
 export const emptyCart: Cart = {
   id: "cart-1",
   items: [],
@@ -177,8 +259,10 @@ export const filledCart: Cart = {
   items: [
     {
       id: "cart-item-1",
+      type: "product",
       quantity: 1,
       product_id: sampleProduct.id,
+      bundle_id: null,
       name: sampleProduct.name,
       slug: sampleProduct.slug,
       unit_price_cents: sampleProduct.price,
@@ -196,10 +280,62 @@ export const filledCart: Cart = {
         name_en: "Unisex",
         name_sq: "Unisex",
       },
+      selections: [],
     },
   ],
   item_count: 1,
   subtotal_cents: sampleProduct.price,
+};
+
+export const packCart: Cart = {
+  id: "cart-1",
+  items: [
+    {
+      id: "cart-item-pack-1",
+      type: "bundle",
+      quantity: 1,
+      product_id: null,
+      bundle_id: samplePack.id,
+      name: samplePack.name,
+      slug: samplePack.slug,
+      unit_price_cents: samplePack.price,
+      line_total_cents: samplePack.price,
+      image_url: samplePack.primary_image_url,
+      color: null,
+      size: null,
+      gender: null,
+      selections: [
+        {
+          bundle_item_id: "pack-item-1",
+          product_id: sampleProduct.id,
+          product_name: sampleProduct.name,
+          quantity: 1,
+          color: {
+            id: "color-black",
+            name_en: "Black",
+            name_sq: "E zezë",
+            hex: "#111111",
+          },
+          size: { id: "size-m", name: "M" },
+        },
+        {
+          bundle_item_id: "pack-item-2",
+          product_id: sampleProductB.id,
+          product_name: sampleProductB.name,
+          quantity: 1,
+          color: {
+            id: "color-black",
+            name_en: "Black",
+            name_sq: "E zezë",
+            hex: "#111111",
+          },
+          size: { id: "size-m", name: "M" },
+        },
+      ],
+    },
+  ],
+  item_count: 1,
+  subtotal_cents: samplePack.price,
 };
 
 export const shippingZones: ShippingZone[] = [

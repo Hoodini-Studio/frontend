@@ -9,7 +9,8 @@ test.describe("Storefront", () => {
 
     await expect(page.getByRole("link", { name: "Hoodini Studio" })).toBeVisible();
     await expect(page.getByText(sampleProduct.name)).toBeVisible();
-    await expect(page.getByText("1 product")).toBeVisible();
+    await expect(page.getByText("2 products")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Packs" })).toBeVisible();
     await expect(page.getByRole("combobox", { name: "Sort" })).toBeVisible();
     await expect(page.locator("#newsletter")).toContainText("Newsletter");
     await expect(page.getByRole("contentinfo")).toContainText("Terms of Service");

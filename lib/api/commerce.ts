@@ -20,10 +20,16 @@ export function getCart(init?: { signal?: AbortSignal }) {
 }
 
 export function addCartItem(payload: {
-  product_id: string;
+  product_id?: string;
+  bundle_id?: string;
   quantity?: number;
   color_id?: string | null;
   size_id?: string | null;
+  selections?: Array<{
+    bundle_item_id: string;
+    color_id?: string | null;
+    size_id?: string | null;
+  }>;
 }) {
   return apiRequest<{ data: Cart }>("/api/cart/items", {
     method: "POST",

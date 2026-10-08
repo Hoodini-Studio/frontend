@@ -81,11 +81,37 @@ export function CartPageContent() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <Link
-                    href={`/products/${item.slug}`}
+                    href={
+                      item.type === "bundle" || item.bundle_id
+                        ? `/packs/${item.slug}`
+                        : `/products/${item.slug}`
+                    }
                     className="font-medium text-foreground hover:underline"
                   >
                     {item.name}
                   </Link>
+                  {(item.selections?.length ?? 0) > 0 ? (
+                    <div className="mt-2">
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                        {t("cartPackIncludes")}
+                      </p>
+                      <ul className="mt-1 space-y-0.5 text-xs text-muted">
+                        {item.selections!.map((selection) => (
+                          <li key={selection.bundle_item_id}>
+                            {[
+                              selection.quantity > 1
+                                ? `${selection.product_name ?? ""} × ${selection.quantity}`
+                                : selection.product_name,
+                              selection.color ? localizedName(selection.color, locale) : null,
+                              selection.size?.name,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                   {(item.color || item.size) ? (
                     <p className="mt-1 text-xs text-muted">
                       {[

@@ -14,9 +14,12 @@ import {
   legalPrivacy,
   legalTerms,
   listMeta,
+  packCart,
   sampleCoupon,
   sampleOrder,
+  samplePack,
   sampleProduct,
+  sampleProductB,
   shippingZones,
   sizes,
 } from "./data";
@@ -203,8 +206,8 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
 
     if (path === "/api/products" && method === "GET") {
       await fulfillJson(route, 200, {
-        data: [sampleProduct],
-        meta: listMeta(1),
+        data: [sampleProduct, sampleProductB],
+        meta: listMeta(2),
       });
       return;
     }
@@ -214,13 +217,35 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
       return;
     }
 
+    if (path === `/api/products/${sampleProductB.slug}` && method === "GET") {
+      await fulfillJson(route, 200, { data: sampleProductB });
+      return;
+    }
+
+    if (path === "/api/bundles" && method === "GET") {
+      await fulfillJson(route, 200, {
+        data: [samplePack],
+        meta: listMeta(1),
+      });
+      return;
+    }
+
+    if (path === `/api/bundles/${samplePack.slug}` && method === "GET") {
+      await fulfillJson(route, 200, { data: samplePack });
+      return;
+    }
+
     if (path === "/api/cart" && method === "GET") {
       await fulfillJson(route, 200, { data: cart });
       return;
     }
 
     if (path === "/api/cart/items" && method === "POST") {
-      cart = filledCart;
+      const body = (request.postDataJSON() ?? {}) as {
+        bundle_id?: string;
+        product_id?: string;
+      };
+      cart = body.bundle_id ? packCart : filledCart;
       await fulfillJson(route, 200, { data: cart });
       return;
     }
@@ -393,14 +418,48 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
 
     if (path === "/api/admin/products" && method === "GET") {
       await fulfillJson(route, 200, {
-        data: [sampleProduct],
-        meta: listMeta(1),
+        data: [sampleProduct, sampleProductB],
+        meta: listMeta(2),
       });
       return;
     }
 
     if (path === `/api/admin/products/${sampleProduct.id}` && method === "GET") {
       await fulfillJson(route, 200, { data: sampleProduct });
+      return;
+    }
+
+    if (path === `/api/admin/products/${sampleProductB.id}` && method === "GET") {
+      await fulfillJson(route, 200, { data: sampleProductB });
+      return;
+    }
+
+    if (path === "/api/admin/bundles" && method === "GET") {
+      await fulfillJson(route, 200, {
+        data: [samplePack],
+        meta: listMeta(1),
+      });
+      return;
+    }
+
+    if (path === `/api/admin/bundles/${samplePack.id}` && method === "GET") {
+      await fulfillJson(route, 200, { data: samplePack });
+      return;
+    }
+
+    if (path === "/api/admin/bundles" && method === "POST") {
+      await fulfillJson(route, 201, { data: samplePack });
+      return;
+    }
+
+    if (path === `/api/admin/bundles/${samplePack.id}` && method === "PATCH") {
+      const body = (request.postDataJSON() ?? {}) as Partial<typeof samplePack>;
+      await fulfillJson(route, 200, { data: { ...samplePack, ...body } });
+      return;
+    }
+
+    if (path === `/api/admin/bundles/${samplePack.id}` && method === "DELETE") {
+      await fulfillJson(route, 200, { message: "Pack deleted successfully." });
       return;
     }
 

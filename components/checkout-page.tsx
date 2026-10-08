@@ -623,6 +623,11 @@ export function CheckoutPageContent() {
             <li key={item.id} className="flex justify-between gap-3">
               <span>
                 {item.name} × {item.quantity}
+                {item.type === "bundle" || item.bundle_id ? (
+                  <span className="ml-2 border border-white/15 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted">
+                    {t("packBadge")}
+                  </span>
+                ) : null}
               </span>
               <span>{formatEuroFromCents(item.line_total_cents)}</span>
             </li>
