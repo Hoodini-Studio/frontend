@@ -41,7 +41,7 @@ import {
   createProductFormSchema,
   type ProductFormValues,
 } from "@/schemas/product";
-import type { Product, ProductStatus } from "@/types/product";
+import type { Product, ProductImage, ProductStatus } from "@/types/product";
 import { ChipGroupSkeleton } from "@/components/ui/chip-group-skeleton";
 
 type ProductFormProps = {
@@ -52,6 +52,8 @@ type GalleryItem =
   | { key: string; kind: "saved"; id: string; url: string }
   | { key: string; kind: "pending"; file: File; previewUrl: string };
 
+type SavePhase = "idle" | "saving" | "uploading";
+
 function savedItemsFromProduct(product?: Product): GalleryItem[] {
   return (product?.images ?? []).map((image) => ({
     key: image.id,
@@ -59,6 +61,44 @@ function savedItemsFromProduct(product?: Product): GalleryItem[] {
     id: image.id,
     url: image.url,
   }));
+}
+
+function newImageIds(uploaded: ProductImage[], knownIds: Set<string>): string[] {
+  return uploaded
+    .filter((image) => !knownIds.has(image.id))
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((image) => image.id);
+}
+
+function mergeUploadedIntoGallery(
+  gallery: GalleryItem[],
+  uploadedImages: ProductImage[],
+  pendingKeys: Set<string>,
+): GalleryItem[] {
+  const knownIds = new Set(
+    gallery
+      .filter((item): item is Extract<GalleryItem, { kind: "saved" }> => item.kind === "saved")
+      .map((item) => item.id),
+  );
+  const freshIds = newImageIds(uploadedImages, knownIds);
+  const byId = new Map(uploadedImages.map((image) => [image.id, image]));
+  let nextIndex = 0;
+
+  return gallery.map((item) => {
+    if (item.kind !== "pending" || !pendingKeys.has(item.key)) {
+      return item;
+    }
+
+    const id = freshIds[nextIndex];
+    nextIndex += 1;
+    const image = id ? byId.get(id) : undefined;
+    if (!image) {
+      return item;
+    }
+
+    URL.revokeObjectURL(item.previewUrl);
+    return { key: image.id, kind: "saved" as const, id: image.id, url: image.url };
+  });
 }
 
 export function ProductForm({ product }: ProductFormProps) {
@@ -75,7 +115,8 @@ export function ProductForm({ product }: ProductFormProps) {
   const [items, setItems] = useState<GalleryItem[]>(() => savedItemsFromProduct(product));
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [dropKey, setDropKey] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [savePhase, setSavePhase] = useState<SavePhase>("idle");
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [categoryIds, setCategoryIds] = useState<string[]>(
     () => product?.categories?.map((item) => item.id) ?? [],
   );
@@ -112,8 +153,18 @@ export function ProductForm({ product }: ProductFormProps) {
     },
   });
 
-  const pending =
-    isSaving || isSubmitting || deleteImageMutation.isPending;
+  const busy =
+    savePhase !== "idle" ||
+    isSubmitting ||
+    isUploadingImages ||
+    deleteImageMutation.isPending;
+
+  const saveButtonLabel =
+    savePhase === "uploading" || isUploadingImages
+      ? t("uploadingImages")
+      : savePhase === "saving" || isSubmitting
+        ? t("saving")
+        : null;
 
   const invalidateProductQueries = async () => {
     await Promise.all([
@@ -174,19 +225,73 @@ export function ProductForm({ product }: ProductFormProps) {
   };
 
   const addPendingFiles = (fileList: FileList | null) => {
-    if (!fileList?.length) {
+    if (!fileList?.length || busy) {
       return;
     }
 
     const next: GalleryItem[] = Array.from(fileList).map((file) => ({
       key: crypto.randomUUID(),
-      kind: "pending",
+      kind: "pending" as const,
       file,
       previewUrl: URL.createObjectURL(file),
     }));
 
     setItems((current) => [...current, ...next]);
     setImagesError(null);
+
+    // Edit: upload immediately. Create: keep local until first save (needs product id).
+    if (!product) {
+      return;
+    }
+
+    void (async () => {
+      setIsUploadingImages(true);
+      try {
+        const uploaded = await uploadAdminProductImages(
+          product.id,
+          next.map((item) => item.file),
+        );
+        const pendingKeys = new Set(next.map((item) => item.key));
+
+        let mergedGallery: GalleryItem[] = [];
+        setItems((current) => {
+          mergedGallery = mergeUploadedIntoGallery(
+            current,
+            uploaded.data.images,
+            pendingKeys,
+          );
+          return mergedGallery;
+        });
+
+        const stillPending = mergedGallery.some((item) => pendingKeys.has(item.key));
+        if (!stillPending) {
+          const orderedIds = mergedGallery
+            .filter(
+              (item): item is Extract<GalleryItem, { kind: "saved" }> =>
+                item.kind === "saved",
+            )
+            .map((item) => item.id);
+
+          if (orderedIds.length > 0) {
+            await reorderAdminProductImages(product.id, orderedIds);
+          }
+        }
+
+        await invalidateProductQueries();
+      } catch {
+        setItems((current) => {
+          for (const item of next) {
+            if (current.some((entry) => entry.key === item.key && entry.kind === "pending")) {
+              URL.revokeObjectURL(item.previewUrl);
+            }
+          }
+          return current.filter((entry) => !next.some((item) => item.key === entry.key));
+        });
+        toast(t("imagesUploadFailed"), { variant: "error" });
+      } finally {
+        setIsUploadingImages(false);
+      }
+    })();
   };
 
   const removeItem = async (item: GalleryItem) => {
@@ -229,6 +334,20 @@ export function ProductForm({ product }: ProductFormProps) {
       const next = [...current];
       const [moved] = next.splice(fromIndex, 1);
       next.splice(toIndex, 0, moved);
+
+      // Edit + all saved: persist order right away so cover updates without waiting for Save.
+      if (
+        product &&
+        next.every((item): item is Extract<GalleryItem, { kind: "saved" }> => item.kind === "saved")
+      ) {
+        const orderedIds = next.map((item) => item.id);
+        queueMicrotask(() => {
+          void reorderAdminProductImages(product.id, orderedIds).catch(() => {
+            toast(t("imagesUploadFailed"), { variant: "error" });
+          });
+        });
+      }
+
       return next;
     });
   };
@@ -261,35 +380,32 @@ export function ProductForm({ product }: ProductFormProps) {
   };
 
   const syncImageOrder = async (productId: string, gallery: GalleryItem[]) => {
-    const pendingFiles = gallery
-      .filter((item): item is Extract<GalleryItem, { kind: "pending" }> => item.kind === "pending")
-      .map((item) => item.file);
-
+    const pendingItems = gallery.filter(
+      (item): item is Extract<GalleryItem, { kind: "pending" }> => item.kind === "pending",
+    );
     const originalIds = new Set(
       gallery
         .filter((item): item is Extract<GalleryItem, { kind: "saved" }> => item.kind === "saved")
         .map((item) => item.id),
     );
 
-    let uploaded = null as Awaited<ReturnType<typeof uploadAdminProductImages>> | null;
+    let uploadedImages: ProductImage[] = [];
 
-    if (pendingFiles.length > 0) {
-      uploaded = await uploadAdminProductImages(productId, pendingFiles);
+    if (pendingItems.length > 0) {
+      const uploaded = await uploadAdminProductImages(
+        productId,
+        pendingItems.map((item) => item.file),
+      );
+      uploadedImages = uploaded.data.images;
     }
 
-    const newIds =
-      uploaded?.data.images
-        .filter((image) => !originalIds.has(image.id))
-        .sort((a, b) => a.sort_order - b.sort_order)
-        .map((image) => image.id) ?? [];
-
+    const freshIds = newImageIds(uploadedImages, originalIds);
     let newIndex = 0;
     const orderedIds = gallery.map((item) => {
       if (item.kind === "saved") {
         return item.id;
       }
-
-      const id = newIds[newIndex];
+      const id = freshIds[newIndex];
       newIndex += 1;
       return id;
     });
@@ -299,6 +415,13 @@ export function ProductForm({ product }: ProductFormProps) {
     }
 
     await reorderAdminProductImages(productId, orderedIds as string[]);
+
+    if (pendingItems.length > 0) {
+      const pendingKeys = new Set(pendingItems.map((item) => item.key));
+      setItems((current) =>
+        mergeUploadedIntoGallery(current, uploadedImages, pendingKeys),
+      );
+    }
   };
 
   const submitWithStatus = (status: ProductStatus) =>
@@ -322,7 +445,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
       setPriceError(null);
       saveLockRef.current = true;
-      setIsSaving(true);
+      setSavePhase("saving");
 
       let createdProductId: string | null = null;
 
@@ -345,11 +468,26 @@ export function ProductForm({ product }: ProductFormProps) {
         };
 
         if (product) {
-          await syncImageOrder(product.id, items);
+          const hasPending = items.some((item) => item.kind === "pending");
+          if (hasPending) {
+            setSavePhase("uploading");
+            await syncImageOrder(product.id, items);
+          } else if (
+            items.every(
+              (item): item is Extract<GalleryItem, { kind: "saved" }> =>
+                item.kind === "saved",
+            )
+          ) {
+            await reorderAdminProductImages(
+              product.id,
+              items.map((item) => item.id),
+            );
+          }
+
+          setSavePhase("saving");
           await updateAdminProduct(product.id, payload);
           await invalidateProductQueries();
           toast(t("savedToast"));
-          router.push("/admin/products");
           router.refresh();
           return;
         }
@@ -358,8 +496,10 @@ export function ProductForm({ product }: ProductFormProps) {
         createdProductId = created.data.id;
 
         try {
+          setSavePhase("uploading");
           await syncImageOrder(created.data.id, items);
         } catch {
+          toast(t("imagesUploadFailed"), { variant: "error" });
           await invalidateProductQueries();
           router.push(`/admin/products/${created.data.id}/edit?imagesFailed=1`);
           router.refresh();
@@ -367,15 +507,18 @@ export function ProductForm({ product }: ProductFormProps) {
         }
 
         if (status === "published") {
+          setSavePhase("saving");
           await updateAdminProduct(created.data.id, { status: "published" });
         }
 
         await invalidateProductQueries();
         toast(t("savedToast"));
-        router.push("/admin/products");
+        // Land on edit so further images upload progressively.
+        router.push(`/admin/products/${created.data.id}/edit`);
         router.refresh();
       } catch (error) {
         if (createdProductId) {
+          toast(t("imagesUploadFailed"), { variant: "error" });
           await invalidateProductQueries();
           router.push(`/admin/products/${createdProductId}/edit?imagesFailed=1`);
           router.refresh();
@@ -390,7 +533,7 @@ export function ProductForm({ product }: ProductFormProps) {
         setFormError(t("unableToSave"));
       } finally {
         saveLockRef.current = false;
-        setIsSaving(false);
+        setSavePhase("idle");
       }
     });
 
@@ -490,7 +633,7 @@ export function ProductForm({ product }: ProductFormProps) {
                   <button
                     key={category.id}
                     type="button"
-                    disabled={pending}
+                    disabled={busy}
                     onClick={() => toggleId(categoryIds, category.id, setCategoryIds)}
                     className={`rounded-lg border px-3 py-2 text-sm transition ${
                       selected
@@ -520,7 +663,7 @@ export function ProductForm({ product }: ProductFormProps) {
                   <button
                     key={collection.id}
                     type="button"
-                    disabled={pending}
+                    disabled={busy}
                     onClick={() =>
                       toggleId(collectionIds, collection.id, setCollectionIds)
                     }
@@ -554,7 +697,7 @@ export function ProductForm({ product }: ProductFormProps) {
                   <button
                     key={color.id}
                     type="button"
-                    disabled={pending}
+                    disabled={busy}
                     onClick={() => toggleId(colorIds, color.id, setColorIds)}
                     className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
                       selected
@@ -589,7 +732,7 @@ export function ProductForm({ product }: ProductFormProps) {
                   <button
                     key={size.id}
                     type="button"
-                    disabled={pending}
+                    disabled={busy}
                     onClick={() => toggleId(sizeIds, size.id, setSizeIds)}
                     className={`rounded-lg border px-3 py-2 text-sm transition ${
                       selected
@@ -619,7 +762,7 @@ export function ProductForm({ product }: ProductFormProps) {
                   <button
                     key={gender.id}
                     type="button"
-                    disabled={pending}
+                    disabled={busy}
                     onClick={() => toggleId(genderIds, gender.id, setGenderIds)}
                     className={`rounded-lg border px-3 py-2 text-sm transition ${
                       selected
@@ -639,7 +782,9 @@ export function ProductForm({ product }: ProductFormProps) {
       <div className="space-y-4 rounded-2xl border border-white/10 bg-white/3 p-6">
         <div>
           <h2 className="font-display text-lg font-semibold text-foreground">{t("images")}</h2>
-          <p className="mt-1 text-sm text-muted">{t("imagesHint")}</p>
+          <p className="mt-1 text-sm text-muted">
+            {product ? t("imagesHintEdit") : t("imagesHintCreate")}
+          </p>
         </div>
 
         {items.length > 0 ? (
@@ -648,11 +793,10 @@ export function ProductForm({ product }: ProductFormProps) {
               const previewUrl = item.kind === "saved" ? item.url : item.previewUrl;
               const isDragging = dragKey === item.key;
               const isDropTarget = dropKey === item.key && dragKey !== item.key;
-
               return (
                 <div
                   key={item.key}
-                  draggable={!pending}
+                  draggable={!busy}
                   onDragStart={(event) => handleDragStart(event, item.key)}
                   onDragOver={(event) => handleDragOver(event, item.key)}
                   onDrop={(event) => handleDrop(event, item.key)}
@@ -680,11 +824,21 @@ export function ProductForm({ product }: ProductFormProps) {
                     <span className="absolute left-2 top-2 bg-black/65 px-2 py-1 text-[10px] font-medium tabular-nums text-foreground">
                       {index + 1}
                     </span>
+                    {item.kind === "pending" && (isUploadingImages || savePhase === "uploading") ? (
+                      <span className="absolute inset-x-0 bottom-0 bg-black/70 px-2 py-1.5 text-center text-[10px] font-medium uppercase tracking-wide text-foreground">
+                        {t("uploadingImages")}
+                      </span>
+                    ) : null}
+                    {item.kind === "pending" && !product && savePhase === "idle" ? (
+                      <span className="absolute inset-x-0 bottom-0 bg-black/70 px-2 py-1.5 text-center text-[10px] font-medium uppercase tracking-wide text-foreground">
+                        {t("imagesPendingSave")}
+                      </span>
+                    ) : null}
                   </div>
                   {items.length > 1 ? (
                     <button
                       type="button"
-                      disabled={pending}
+                      disabled={busy}
                       onClick={() => void removeItem(item)}
                       className="text-sm text-red-300 transition hover:opacity-80 disabled:opacity-50"
                     >
@@ -700,15 +854,16 @@ export function ProductForm({ product }: ProductFormProps) {
         <div>
           <label
             htmlFor="images"
-            className="inline-flex cursor-pointer rounded-xl border border-white/15 px-4 py-3 text-sm text-foreground transition hover:border-white/30 hover:bg-white/5"
+            className={`inline-flex rounded-xl border border-white/15 px-4 py-3 text-sm text-foreground transition hover:border-white/30 hover:bg-white/5 ${busy ? "pointer-events-none cursor-not-allowed opacity-60" : "cursor-pointer"}`}
           >
-            {t("addImages")}
+            {isUploadingImages ? t("uploadingImages") : t("addImages")}
           </label>
           <input
             id="images"
             type="file"
             accept="image/*,.avif,image/avif"
             multiple
+            disabled={busy}
             className="sr-only"
             onChange={(event) => {
               addPendingFiles(event.target.files);
@@ -725,19 +880,19 @@ export function ProductForm({ product }: ProductFormProps) {
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
-          disabled={pending}
+          disabled={busy}
           onClick={() => void submitWithStatus("draft")()}
           className="rounded-xl border border-white/15 px-5 py-3 text-sm font-medium text-foreground transition hover:border-white/30 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? t("saving") : t("saveDraft")}
+          {saveButtonLabel ?? t("saveDraft")}
         </button>
         <button
           type="button"
-          disabled={pending}
+          disabled={busy}
           onClick={() => void submitWithStatus("published")()}
           className="rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? t("saving") : t("savePublish")}
+          {saveButtonLabel ?? t("savePublish")}
         </button>
       </div>
     </form>
