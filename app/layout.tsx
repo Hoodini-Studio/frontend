@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Syne } from "next/font/google";
+import { DM_Sans, Montserrat } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { VercelMetrics } from "@/components/analytics/vercel-metrics";
@@ -10,10 +10,10 @@ import { QueryProvider } from "@/providers/query-provider";
 import { ToastProvider } from "@/providers/toast-provider";
 import "./globals.css";
 
-const syne = Syne({
-  variable: "--font-syne",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: ["300", "500", "700", "800"],
   display: "swap",
   preload: true,
 });
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     default: "Hoodini Studio",
     template: "%s | Hoodini Studio",
   },
-  description: "Shop the latest from Hoodini Studio.",
+  description: "Premium dark streetwear from Hoodini Studio. Wear the night.",
   applicationName: "Hoodini Studio",
   // Page-specific openGraph.url / title live on each route (see app/page.tsx, legal, products).
   // Keeping only shared defaults here avoids every page inheriting homepage "/" OG URL/title.
@@ -69,7 +69,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${syne.variable} ${dmSans.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="min-h-dvh bg-background text-foreground">
         <NextIntlClientProvider locale={locale} messages={messages}>

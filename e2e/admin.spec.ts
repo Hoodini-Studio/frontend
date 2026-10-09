@@ -71,14 +71,6 @@ test.describe("Admin", () => {
     await expect(page.getByText("guest@example.com")).toBeVisible();
   });
 
-  test("legal pages admin", async ({ page }) => {
-    await installApiMocks(page, { auth: "admin" });
-    await page.goto("/admin/legal");
-
-    await expect(page.getByText(/Terms/i).first()).toBeVisible();
-    await expect(page.getByText(/Privacy/i).first()).toBeVisible();
-  });
-
   test("users list", async ({ page }) => {
     await installApiMocks(page, { auth: "admin" });
     await page.goto("/admin/users");

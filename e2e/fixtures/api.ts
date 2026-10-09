@@ -11,8 +11,6 @@ import {
   emptyCart,
   filledCart,
   genders,
-  legalPrivacy,
-  legalTerms,
   listMeta,
   packCart,
   sampleCoupon,
@@ -364,36 +362,6 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
       return;
     }
 
-    if (path.startsWith("/api/legal/terms")) {
-      await fulfillJson(route, 200, {
-        data: {
-          id: "legal-terms",
-          slug: "terms",
-          locale: "en",
-          title: legalTerms.title,
-          body: legalTerms.body,
-          updated_at: legalTerms.updated_at,
-          created_at: legalTerms.updated_at,
-        },
-      });
-      return;
-    }
-
-    if (path.startsWith("/api/legal/privacy")) {
-      await fulfillJson(route, 200, {
-        data: {
-          id: "legal-privacy",
-          slug: "privacy",
-          locale: "en",
-          title: legalPrivacy.title,
-          body: legalPrivacy.body,
-          updated_at: legalPrivacy.updated_at,
-          created_at: legalPrivacy.updated_at,
-        },
-      });
-      return;
-    }
-
     // Admin catalog
     if (path === "/api/admin/categories" && method === "GET") {
       await fulfillJson(route, 200, { data: categories });
@@ -563,49 +531,6 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
           "Content-Disposition": 'attachment; filename="newsletter-emails.csv"',
         },
         body: "email\nguest@example.com\n",
-      });
-      return;
-    }
-
-    if (path === "/api/admin/legal" && method === "GET") {
-      await fulfillJson(route, 200, {
-        data: [
-          {
-            id: "legal-terms-en",
-            slug: "terms",
-            locale: "en",
-            title: legalTerms.title,
-            body: legalTerms.body,
-            updated_at: legalTerms.updated_at,
-            created_at: legalTerms.updated_at,
-          },
-          {
-            id: "legal-privacy-en",
-            slug: "privacy",
-            locale: "en",
-            title: legalPrivacy.title,
-            body: legalPrivacy.body,
-            updated_at: legalPrivacy.updated_at,
-            created_at: legalPrivacy.updated_at,
-          },
-        ],
-      });
-      return;
-    }
-
-    if (path.startsWith("/api/admin/legal/") && method === "PUT") {
-      await fulfillJson(route, 200, {
-        data: [
-          {
-            id: "legal-terms-en",
-            slug: "terms",
-            locale: "en",
-            title: legalTerms.title,
-            body: legalTerms.body,
-            updated_at: legalTerms.updated_at,
-            created_at: legalTerms.updated_at,
-          },
-        ],
       });
       return;
     }

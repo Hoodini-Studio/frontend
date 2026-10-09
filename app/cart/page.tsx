@@ -11,7 +11,7 @@ export default async function CartPage() {
   const t = await getTranslations("store");
 
   return (
-    <main>
+    <main className="flex flex-1 flex-col">
       <span className="sr-only">{t("cartTitle")}</span>
       <CartPageContent />
     </main>

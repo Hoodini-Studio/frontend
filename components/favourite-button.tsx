@@ -17,7 +17,7 @@ function HeartIcon({ filled, className }: { filled: boolean; className?: string 
       viewBox="0 0 24 24"
       fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
-      strokeWidth="1.75"
+      strokeWidth={filled ? "0" : "1.5"}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
@@ -63,9 +63,19 @@ export function FavouriteButton({
       aria-label={isFavourite ? t("removeFromFavourites") : t("addToFavourites")}
       disabled={toggle.isPending}
       onClick={onClick}
-      className={`inline-flex items-center justify-center border border-white/15 bg-black/55 text-foreground backdrop-blur-sm transition hover:bg-black/75 disabled:opacity-60 ${className}`}
+      className={[
+        "inline-flex h-9 w-9 items-center justify-center transition duration-200",
+        "disabled:opacity-50",
+        "active:scale-95",
+        isFavourite
+          ? "bg-foreground text-background hover:opacity-90"
+          : "bg-background/70 text-foreground hover:bg-background",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
-      <HeartIcon filled={isFavourite} className="h-4 w-4" />
+      <HeartIcon filled={isFavourite} className="h-[18px] w-[18px]" />
     </button>
   );
 }

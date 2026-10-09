@@ -1,9 +1,8 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useQuery } from "@tanstack/react-query";
-import { getLegalPage, parseLegalBody, type LegalSlug } from "@/lib/api/legal";
-import { SkeletonBlock } from "@/components/ui/skeleton-block";
+import { getLegalDocument, type LegalSlug } from "@/lib/legal/content";
+import { pageShellClass } from "@/lib/layout";
 
 function formatUpdatedAt(value: string, locale: string): string {
   try {
@@ -20,52 +19,25 @@ function formatUpdatedAt(value: string, locale: string): string {
 export function LegalDocument({ doc }: { doc: LegalSlug }) {
   const t = useTranslations("legal");
   const locale = useLocale();
-
-  const query = useQuery({
-    queryKey: ["legal", doc, locale],
-    queryFn: async ({ signal }) => (await getLegalPage(doc, locale, { signal })).data,
-  });
-
-  if (query.isLoading) {
-    return (
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <SkeletonBlock className="h-10 w-2/3" />
-        <SkeletonBlock className="mt-4 h-4 w-1/2" />
-        <div className="mt-10 space-y-6">
-          <SkeletonBlock className="h-6 w-1/3" />
-          <SkeletonBlock className="h-20 w-full" />
-          <SkeletonBlock className="h-6 w-1/3" />
-          <SkeletonBlock className="h-24 w-full" />
-        </div>
-      </main>
-    );
-  }
-
-  if (query.isError || !query.data) {
-    return (
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="font-display text-4xl font-semibold text-foreground">
-          {doc === "terms" ? t("termsTitle") : t("privacyTitle")}
-        </h1>
-        <p className="mt-4 text-sm text-red-300">{t("unableToLoad")}</p>
-      </main>
-    );
-  }
-
-  const sections = parseLegalBody(query.data.body);
+  const content = getLegalDocument(doc, locale);
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="font-display text-4xl font-semibold text-foreground">{query.data.title}</h1>
+    <main className={pageShellClass("reading", "py-16")}>
+      <p className="text-[11px] uppercase tracking-[0.28em] text-muted">Hoodini Studio</p>
+      <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-foreground">
+        {content.title}
+      </h1>
       <p className="mt-3 text-sm text-muted">
-        {t("updatedLabel", { date: formatUpdatedAt(query.data.updated_at, locale) })}
+        {t("updatedLabel", { date: formatUpdatedAt(content.updatedAt, locale) })}
       </p>
       <p className="mt-2 text-sm text-muted">{t("disclaimer")}</p>
 
-      <div className="mt-10 space-y-8">
-        {sections.map((section) => (
+      <div className="mt-10 space-y-8 border-t border-border pt-10">
+        {content.sections.map((section) => (
           <section key={section.title}>
-            <h2 className="font-display text-xl font-semibold text-foreground">{section.title}</h2>
+            <h2 className="font-display text-xl font-bold tracking-tight text-foreground">
+              {section.title}
+            </h2>
             {section.body ? (
               <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted">
                 {section.body}

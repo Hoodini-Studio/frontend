@@ -96,7 +96,7 @@ export function StorefrontFilterSheet({
       aria-modal="true"
       aria-labelledby="storefront-filters-sheet-title"
     >
-      <header className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+      <header className="flex items-center justify-between border-b border-border px-6 py-4">
         <h2
           id="storefront-filters-sheet-title"
           className="font-display text-xl font-semibold text-foreground"
@@ -128,7 +128,7 @@ export function StorefrontFilterSheet({
         />
       </div>
 
-      <footer className="flex items-center gap-3 border-t border-white/10 px-6 py-4">
+      <footer className="flex items-center gap-3 border-t border-border px-6 py-4">
         {activeCount > 0 ? (
           <button
             type="button"

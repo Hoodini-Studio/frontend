@@ -1,6 +1,12 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import {
   createAdminProduct,
   deleteAdminProduct,
@@ -26,6 +32,37 @@ export function usePublishedProducts(
         ...filters,
         signal,
       }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Paginated published products for infinite scroll. Resets when filter key changes. */
+export function usePublishedProductsInfinite(
+  filters: Omit<PublishedProductFilters, "signal" | "page"> = {},
+) {
+  const { perPage = 12, ...rest } = filters;
+
+  return useInfiniteQuery({
+    queryKey: ["products", "published", "infinite", { ...rest, perPage }],
+    queryFn: ({ pageParam, signal }) =>
+      listPublishedProducts({
+        ...rest,
+        perPage,
+        page: pageParam,
+        signal,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const meta = lastPage.meta;
+      if (!meta) {
+        return undefined;
+      }
+
+      return meta.current_page < meta.last_page
+        ? meta.current_page + 1
+        : undefined;
+    },
+    // Keep prior grid height while a new filter key loads (avoids scroll jank).
     placeholderData: keepPreviousData,
   });
 }

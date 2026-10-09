@@ -11,7 +11,7 @@ export default async function FavouritesPage() {
   const t = await getTranslations("store");
 
   return (
-    <main>
+    <main className="flex flex-1 flex-col">
       <span className="sr-only">{t("favouritesTitle")}</span>
       <FavouritesPageContent />
     </main>

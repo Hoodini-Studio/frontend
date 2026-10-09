@@ -43,6 +43,7 @@ export const categories = [
     slug: "hoodies",
     sort_order: 1,
     is_active: true,
+    products_count: 2,
   },
 ];
 
@@ -55,6 +56,7 @@ export const collections = [
     slug: "anime",
     sort_order: 1,
     is_active: true,
+    products_count: 2,
   },
 ];
 
@@ -413,20 +415,6 @@ export const sampleCoupon: Coupon = {
   max_uses_per_user: null,
   created_at: "2026-01-01T00:00:00.000000Z",
   updated_at: "2026-01-01T00:00:00.000000Z",
-};
-
-export const legalTerms = {
-  slug: "terms",
-  title: "Terms of Service",
-  updated_at: "2026-03-20T00:00:00.000000Z",
-  body: "## Overview\n\nThese are the Hoodini Studio terms.",
-};
-
-export const legalPrivacy = {
-  slug: "privacy",
-  title: "Privacy Policy",
-  updated_at: "2026-03-20T00:00:00.000000Z",
-  body: "## Overview\n\nThis is the Hoodini Studio privacy policy.",
 };
 
 export function listMeta(total = 1) {

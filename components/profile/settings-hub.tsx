@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { ArrowMark } from "@/components/brand/arrow-mark";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/auth/roles";
 import { pageShellClass } from "@/lib/layout";
@@ -60,37 +61,34 @@ export function SettingsHub() {
   ];
 
   return (
-    <main className={pageShellClass("shell", "py-10 animate-[fade-in-up_0.45s_ease-out]")}>
-      <div className="mb-10">
-        <p className="text-sm uppercase tracking-[0.25em] text-muted">{t("eyebrow")}</p>
-        <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+    <main className={pageShellClass("shell", "py-12 sm:py-16")}>
+      <div className="mb-10 max-w-xl">
+        <p className="text-[11px] uppercase tracking-[0.28em] text-muted">{t("eyebrow")}</p>
+        <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
           {t("title")}
         </h1>
-        <p className="mt-3 max-w-md text-muted">{t("hubSubtitle")}</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
+          {t("hubSubtitle")}
+        </p>
       </div>
 
-      <nav aria-label={t("title")} className="border-y border-white/10">
+      <nav aria-label={t("title")} className="border-y border-border">
         <ul>
           {items.map((item) => (
-            <li key={item.href} className="border-b border-white/10 last:border-b-0">
+            <li key={item.href} className="border-b border-border last:border-b-0">
               <Link
                 href={item.href}
-                className="group flex items-center justify-between gap-4 py-5 transition hover:bg-white/5"
+                className="group flex items-center justify-between gap-4 py-5 transition hover:bg-surface/60 sm:px-2"
               >
                 <span className="min-w-0">
-                  <span className="block font-display text-lg font-semibold text-foreground transition group-hover:translate-x-0.5">
+                  <span className="block font-display text-lg font-bold tracking-tight text-foreground">
                     {item.title}
                   </span>
                   <span className="mt-1 block truncate text-sm text-muted">
                     {item.hint}
                   </span>
                 </span>
-                <span
-                  aria-hidden="true"
-                  className="shrink-0 text-muted transition group-hover:translate-x-0.5 group-hover:text-foreground"
-                >
-                  →
-                </span>
+                <ArrowMark className="h-4 w-4 shrink-0 text-muted transition group-hover:translate-x-0.5 group-hover:text-foreground" />
               </Link>
             </li>
           ))}

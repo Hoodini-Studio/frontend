@@ -62,10 +62,10 @@ export function LanguageSettings() {
               onClick={() => void handleLocaleChange(locale)}
               disabled={updateLocaleMutation.isPending}
               aria-pressed={selected}
-              className={`rounded-xl border px-4 py-2.5 text-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
+              className={`border px-4 py-2.5 text-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
                 selected
-                  ? "border-white/40 bg-white/10 text-foreground"
-                  : "border-white/10 text-muted hover:border-white/25 hover:text-foreground"
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border text-muted hover:border-border-strong hover:text-foreground"
               }`}
             >
               {label}

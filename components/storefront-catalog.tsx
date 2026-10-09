@@ -374,7 +374,7 @@ function StorefrontCatalogContent() {
                 <FavouriteButton
                   productId={product.id}
                   stopPropagation
-                  className="absolute right-3 top-3 z-10 h-9 w-9"
+                  className="absolute right-3 top-3 z-10"
                 />
               ) : null}
             </li>

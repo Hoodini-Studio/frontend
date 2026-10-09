@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { LogoLockup } from "@/components/brand/logo-lockup";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-commerce";
 import { useFavouriteIds } from "@/hooks/use-favourites";
@@ -82,16 +83,19 @@ export function SiteHeader() {
   }, [cartCount, cartQuery.isSuccess]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-background/95 print:hidden">
-      <div className={`mx-auto flex h-16 w-full ${PAGE_WIDTH.shell} items-center justify-between px-6`}>
+    <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md print:hidden">
+      <div
+        className={`mx-auto flex h-[4.5rem] w-full ${PAGE_WIDTH.shell} items-center justify-between gap-4 px-6`}
+      >
         <Link
           href={homePath}
-          className="font-display text-sm font-semibold uppercase tracking-[0.25em] text-foreground transition hover:opacity-80"
+          aria-label={t("brand")}
+          className="shrink-0 transition hover:opacity-85"
         >
-          {t("brand")}
+          <LogoLockup />
         </Link>
 
-        <nav className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-3 sm:gap-4">
           {showStoreIcons ? (
             <>
               <Link
@@ -125,30 +129,23 @@ export function SiteHeader() {
               </Link>
             </>
           ) : null}
+
           {isLoading ? (
             <div
               aria-hidden
-              className="h-9 w-9 animate-pulse rounded-full border border-white/10 bg-white/10"
+              className="h-9 w-9 animate-pulse rounded-full border border-border bg-surface"
             />
           ) : user ? (
             <UserMenu user={user} />
           ) : (
-            <>
-              <Link
-                href="/login"
-                className="whitespace-nowrap text-muted transition hover:text-foreground"
-              >
-                {t("signIn")}
-              </Link>
-              <Link
-                href="/register"
-                className="whitespace-nowrap rounded-lg border border-white/10 px-4 py-2 text-foreground transition hover:border-white/25 hover:bg-white/5"
-              >
-                {t("register")}
-              </Link>
-            </>
+            <Link
+              href="/login"
+              className="whitespace-nowrap text-xs font-medium uppercase tracking-[0.18em] text-muted transition hover:text-foreground"
+            >
+              {t("signIn")}
+            </Link>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

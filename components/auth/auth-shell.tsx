@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { LogoLockup } from "@/components/brand/logo-lockup";
 
 type AuthShellProps = {
   title: string;
@@ -11,19 +11,20 @@ type AuthShellProps = {
 };
 
 export function AuthShell({ title, description, children, footer }: AuthShellProps) {
-  const t = useTranslations("common");
-
   return (
-    <main className="flex flex-1 items-center justify-center px-6 py-16">
-      <div className="w-full max-w-md animate-fade-in-up rounded-2xl border border-white/10 bg-white/3 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-sm">
-        <div className="mb-8 space-y-2 text-center">
-          <Link
-            href="/"
-            className="font-display text-sm uppercase tracking-[0.35em] text-muted transition hover:text-foreground"
-          >
-            {t("brand")}
+    <main className="relative flex flex-1 items-center justify-center px-6 py-16">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_50%_40%_at_50%_0%,rgba(32,56,44,0.35),transparent_60%)]"
+      />
+      <div className="w-full max-w-md border border-border bg-surface px-8 py-10 animate-[fade-in-up_0.7s_ease-out]">
+        <div className="mb-8 space-y-3 text-center">
+          <Link href="/" className="inline-flex justify-center transition hover:opacity-85">
+            <LogoLockup />
           </Link>
-          <h1 className="font-display text-3xl font-semibold text-foreground">{title}</h1>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground">
+            {title}
+          </h1>
           <p className="text-sm text-muted">{description}</p>
         </div>
 

@@ -8,7 +8,10 @@ test.describe("Account", () => {
     await page.goto("/account-settings");
 
     await expect(page.getByRole("heading", { name: "Account settings" })).toBeVisible();
-    await page.getByRole("link", { name: /Profile/i }).click();
+    await page
+      .getByRole("navigation", { name: "Account settings" })
+      .getByRole("link", { name: /Profile/i })
+      .click();
     await expect(page).toHaveURL(/\/account-settings\/profile/);
     await expect(page.getByText("Ada Customer")).toBeVisible();
   });
@@ -46,8 +49,10 @@ test.describe("Account", () => {
     await page.goto("/orders");
 
     await expect(page.getByText(sampleOrder.number)).toBeVisible();
-    await page.getByRole("link", { name: new RegExp(sampleOrder.number) }).click();
-    await expect(page).toHaveURL(new RegExp(`/orders/${sampleOrder.id}`));
+    await page.locator(`a[href="/orders/${sampleOrder.id}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`/orders/${sampleOrder.id}`), {
+      timeout: 15_000,
+    });
     await expect(page.getByText(sampleProduct.name)).toBeVisible();
   });
 

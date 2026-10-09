@@ -184,6 +184,29 @@ export function useStorefrontFilters() {
     });
   }, [filters.sort, replaceFilters]);
 
+  /** Set collection chips from the discovery rail (categories stay in Filters). */
+  const selectDiscovery = useCallback(
+    (kind: "all" | "collection" | "category", slug?: string) => {
+      if (kind === "all") {
+        replaceFilters({
+          ...filters,
+          collection: [],
+        });
+        return;
+      }
+
+      if (kind !== "collection" || !slug) {
+        return;
+      }
+
+      replaceFilters({
+        ...filters,
+        collection: [slug],
+      });
+    },
+    [filters, replaceFilters],
+  );
+
   const activeCount =
     (filters.search ? 1 : 0) +
     filters.category.length +
@@ -202,5 +225,6 @@ export function useStorefrontFilters() {
     setSearch,
     setPriceRange,
     clearAll,
+    selectDiscovery,
   };
 }

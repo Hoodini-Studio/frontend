@@ -63,7 +63,7 @@ export function ShippingAddressForm() {
             id="settings-phone"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none focus:border-white/30"
+            className="w-full border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-border-strong"
           />
         </div>
         <div>
@@ -92,7 +92,7 @@ export function ShippingAddressForm() {
             id="settings-city"
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none focus:border-white/30"
+            className="w-full border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-border-strong"
           />
         </div>
         <div>
@@ -103,7 +103,7 @@ export function ShippingAddressForm() {
             id="settings-postal"
             value={postalCode}
             onChange={(e) => setPostalCode(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none focus:border-white/30"
+            className="w-full border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-border-strong"
           />
         </div>
         <div className="sm:col-span-2">
@@ -114,7 +114,7 @@ export function ShippingAddressForm() {
             id="settings-address"
             value={addressLine}
             onChange={(e) => setAddressLine(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none focus:border-white/30"
+            className="w-full border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-border-strong"
           />
         </div>
       </div>
@@ -124,7 +124,7 @@ export function ShippingAddressForm() {
         type="button"
         disabled={updateProfile.isPending}
         onClick={() => void save()}
-        className="rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-60"
+        className="bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-60"
       >
         {updateProfile.isPending ? t("savingLanguage") : t("saveAddress")}
       </button>

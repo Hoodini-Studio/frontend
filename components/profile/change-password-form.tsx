@@ -87,7 +87,7 @@ export function ChangePasswordForm() {
             id="current_password"
             type="password"
             autoComplete="current-password"
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none transition focus:border-white/30"
+            className="w-full border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-border-strong"
             {...register("current_password")}
           />
           {errors.current_password ? (
@@ -103,7 +103,7 @@ export function ChangePasswordForm() {
             id="password"
             type="password"
             autoComplete="new-password"
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none transition focus:border-white/30"
+            className="w-full border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-border-strong"
             {...register("password")}
           />
           {errors.password ? (
@@ -122,7 +122,7 @@ export function ChangePasswordForm() {
             id="password_confirmation"
             type="password"
             autoComplete="new-password"
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-foreground outline-none transition focus:border-white/30"
+            className="w-full border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-border-strong"
             {...register("password_confirmation")}
           />
           {errors.password_confirmation ? (
@@ -140,7 +140,7 @@ export function ChangePasswordForm() {
         <button
           type="submit"
           disabled={isSubmitting || changePasswordMutation.isPending}
-          className="rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="bg-foreground px-4 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting || changePasswordMutation.isPending
             ? tCommon("updating")

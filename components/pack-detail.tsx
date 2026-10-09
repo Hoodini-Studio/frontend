@@ -12,12 +12,17 @@ import { formatEuroFromCents } from "@/lib/money";
 import { pageShellClass } from "@/lib/layout";
 import { useToast } from "@/providers/toast-provider";
 import { ProductDetailSkeleton } from "@/components/ui/product-detail-skeleton";
+import type { BundleItem } from "@/types/bundle";
 
 type Selection = { colorId: string | null; sizeId: string | null };
 
 type PackDetailProps = {
   slug: string;
 };
+
+function itemImageUrl(item: BundleItem) {
+  return item.product?.primary_image_url ?? null;
+}
 
 export function PackDetail({ slug }: PackDetailProps) {
   const t = useTranslations("store");
@@ -30,13 +35,25 @@ export function PackDetail({ slug }: PackDetailProps) {
   const [syncedFor, setSyncedFor] = useState<string | null>(null);
   const [missing, setMissing] = useState<Set<string>>(new Set());
   const [justAdded, setJustAdded] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const addedResetRef = useRef<number | null>(null);
   const itemRefs = useRef<Record<string, HTMLLIElement | null>>({});
 
   const items = [...(pack?.items ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+  const canNavigate = items.length > 1;
+  const resolvedIndex =
+    items.length === 0 ? 0 : Math.min(Math.max(activeIndex, 0), items.length - 1);
+  const activeItem = items[resolvedIndex] ?? null;
+  const activeImageUrl =
+    (activeItem ? itemImageUrl(activeItem) : null) ??
+    pack?.primary_image_url ??
+    items.find((item) => itemImageUrl(item))?.product?.primary_image_url ??
+    null;
+  const activeName = activeItem?.product?.name ?? pack?.name ?? "";
 
   if (pack && pack.id !== syncedFor) {
     setSyncedFor(pack.id);
+    setActiveIndex(0);
     setSelections(
       Object.fromEntries(
         pack.items.map((item) => [
@@ -58,6 +75,64 @@ export function PackDetail({ slug }: PackDetailProps) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!canNavigate) {
+      return;
+    }
+
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        setActiveIndex((current) => (current - 1 + items.length) % items.length);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        setActiveIndex((current) => (current + 1) % items.length);
+      }
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canNavigate, items.length]);
+
+  const focusItem = (index: number, options?: { scroll?: boolean }) => {
+    setActiveIndex(index);
+    if (!options?.scroll) {
+      return;
+    }
+    const item = items[index];
+    if (item) {
+      itemRefs.current[item.id]?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  };
+
+  const showPrevious = () => {
+    if (!canNavigate) {
+      return;
+    }
+    focusItem((resolvedIndex - 1 + items.length) % items.length);
+  };
+
+  const showNext = () => {
+    if (!canNavigate) {
+      return;
+    }
+    focusItem((resolvedIndex + 1) % items.length);
+  };
 
   const select = (itemId: string, patch: Partial<Selection>) => {
     setSelections((current) => ({
@@ -93,10 +168,16 @@ export function PackDetail({ slug }: PackDetailProps) {
 
     if (incomplete.length > 0) {
       setMissing(new Set(incomplete.map((item) => item.id)));
-      itemRefs.current[incomplete[0].id]?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
+      const firstMissing = incomplete[0];
+      const missingIndex = items.findIndex((item) => item.id === firstMissing.id);
+      if (missingIndex >= 0) {
+        focusItem(missingIndex, { scroll: true });
+      } else {
+        itemRefs.current[firstMissing.id]?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
       return;
     }
 
@@ -128,10 +209,6 @@ export function PackDetail({ slug }: PackDetailProps) {
       .catch(() => toast(t("unableToAddToCart"), { variant: "error" }));
   };
 
-  const coverUrl =
-    pack?.primary_image_url ??
-    items.find((item) => item.product?.primary_image_url)?.product?.primary_image_url ??
-    null;
   const description = pack ? localizedDescription(pack, locale) : null;
   const showSuggested =
     pack != null &&
@@ -164,18 +241,99 @@ export function PackDetail({ slug }: PackDetailProps) {
 
         {pack ? (
           <article className="grid gap-10 lg:grid-cols-2">
-            <div className="relative aspect-4/5 self-start overflow-hidden bg-linear-to-b from-white/7 to-white/2">
-              {coverUrl ? (
-                <Image
-                  src={coverUrl}
-                  alt={pack.name}
-                  fill
-                  unoptimized
-                  loading="eager"
-                  fetchPriority="high"
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
+            <div className="space-y-4">
+              <div className="relative aspect-4/5 self-start overflow-hidden bg-linear-to-b from-white/7 to-white/2">
+                {activeImageUrl ? (
+                  <Image
+                    key={activeItem?.id ?? "pack-cover"}
+                    src={activeImageUrl}
+                    alt={activeName}
+                    fill
+                    unoptimized
+                    loading="eager"
+                    fetchPriority="high"
+                    className="object-cover animate-[fade-in-up_0.35s_ease-out]"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                ) : null}
+
+                {activeItem?.product?.name ? (
+                  <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-background via-background/70 to-transparent px-4 pb-4 pt-16">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted">
+                      {canNavigate
+                        ? t("packProductCounter", {
+                            current: resolvedIndex + 1,
+                            total: items.length,
+                          })
+                        : t("packLabel")}
+                    </p>
+                    <p className="mt-1 font-display text-lg font-bold tracking-tight text-foreground">
+                      {activeItem.product.name}
+                    </p>
+                  </div>
+                ) : null}
+
+                {canNavigate ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={showPrevious}
+                      aria-label={t("previousPackProduct")}
+                      className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-border bg-background/80 text-foreground transition hover:bg-background"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      onClick={showNext}
+                      aria-label={t("nextPackProduct")}
+                      className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-border bg-background/80 text-foreground transition hover:bg-background"
+                    >
+                      ›
+                    </button>
+                  </>
+                ) : null}
+              </div>
+
+              {items.length > 1 ? (
+                <ul className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                  {items.map((item, index) => {
+                    const url = itemImageUrl(item);
+                    const selected = index === resolvedIndex;
+                    const name = item.product?.name ?? t("packLabel");
+
+                    return (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          onClick={() => focusItem(index)}
+                          aria-label={t("packShowProduct", { name })}
+                          aria-current={selected ? "true" : undefined}
+                          className={`relative block aspect-square w-full overflow-hidden border transition ${
+                            selected
+                              ? "border-foreground"
+                              : "border-border hover:border-border-strong"
+                          }`}
+                        >
+                          {url ? (
+                            <Image
+                              src={url}
+                              alt=""
+                              fill
+                              unoptimized
+                              className="object-cover"
+                              sizes="120px"
+                            />
+                          ) : (
+                            <span className="flex h-full items-center justify-center bg-surface text-[10px] uppercase tracking-[0.14em] text-muted">
+                              {index + 1}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
               ) : null}
             </div>
 
@@ -207,10 +365,11 @@ export function PackDetail({ slug }: PackDetailProps) {
                 </h2>
                 <p className="mt-2 text-sm text-muted">{t("packSelectOptions")}</p>
 
-                <ul className="mt-4 divide-y divide-white/10 border-y border-white/10">
-                  {items.map((item) => {
+                <ul className="mt-4 divide-y divide-border border-y border-border">
+                  {items.map((item, index) => {
                     const selection = selections[item.id];
                     const needsAttention = missing.has(item.id);
+                    const isActive = index === resolvedIndex;
 
                     return (
                       <li
@@ -218,9 +377,23 @@ export function PackDetail({ slug }: PackDetailProps) {
                         ref={(node) => {
                           itemRefs.current[item.id] = node;
                         }}
-                        className="flex gap-4 py-5"
+                        className={`flex gap-4 py-5 transition ${
+                          isActive ? "bg-surface/80" : ""
+                        }`}
                       >
-                        <div className="relative h-24 w-20 shrink-0 overflow-hidden bg-white/5">
+                        <button
+                          type="button"
+                          onClick={() => focusItem(index)}
+                          aria-label={t("packShowProduct", {
+                            name: item.product?.name ?? t("packLabel"),
+                          })}
+                          aria-current={isActive ? "true" : undefined}
+                          className={`relative h-24 w-20 shrink-0 overflow-hidden border transition ${
+                            isActive
+                              ? "border-foreground"
+                              : "border-transparent hover:border-border-strong"
+                          }`}
+                        >
                           {item.product?.primary_image_url ? (
                             <Image
                               src={item.product.primary_image_url}
@@ -231,14 +404,20 @@ export function PackDetail({ slug }: PackDetailProps) {
                               sizes="80px"
                             />
                           ) : null}
-                        </div>
+                        </button>
                         <div className="min-w-0 flex-1 space-y-3">
-                          <p className="font-medium text-foreground">
+                          <button
+                            type="button"
+                            onClick={() => focusItem(index)}
+                            className={`text-left font-medium transition ${
+                              isActive ? "text-foreground" : "text-foreground/90 hover:text-foreground"
+                            }`}
+                          >
                             {item.product?.name}
                             {item.quantity > 1 ? (
                               <span className="text-muted"> × {item.quantity}</span>
                             ) : null}
-                          </p>
+                          </button>
 
                           {item.colors.length > 0 ? (
                             <div>
@@ -260,17 +439,24 @@ export function PackDetail({ slug }: PackDetailProps) {
                                       key={color.id}
                                       type="button"
                                       aria-pressed={selected}
-                                      onClick={() => select(item.id, { colorId: color.id })}
+                                      onClick={() => {
+                                        focusItem(index);
+                                        select(item.id, { colorId: color.id });
+                                      }}
                                       className={`inline-flex items-center gap-2 border px-3 py-1.5 text-sm transition ${
                                         selected
-                                          ? "border-white/40 bg-white/10 text-foreground"
+                                          ? "border-foreground bg-foreground font-medium text-background"
                                           : needsAttention && !selection?.colorId
-                                            ? "border-white/35 text-foreground"
-                                            : "border-white/15 text-foreground hover:border-white/30"
+                                            ? "border-border-strong text-foreground"
+                                            : "border-border text-foreground hover:border-border-strong"
                                       }`}
                                     >
                                       <span
-                                        className="h-3.5 w-3.5 rounded-full border border-white/20"
+                                        className={
+                                          selected
+                                            ? "h-3.5 w-3.5 rounded-full border-2 border-background"
+                                            : "h-3.5 w-3.5 rounded-full border border-border"
+                                        }
                                         style={{ backgroundColor: color.hex }}
                                         aria-hidden="true"
                                       />
@@ -302,13 +488,16 @@ export function PackDetail({ slug }: PackDetailProps) {
                                       key={size.id}
                                       type="button"
                                       aria-pressed={selected}
-                                      onClick={() => select(item.id, { sizeId: size.id })}
+                                      onClick={() => {
+                                        focusItem(index);
+                                        select(item.id, { sizeId: size.id });
+                                      }}
                                       className={`min-w-10 border px-3 py-1.5 text-center text-sm transition ${
                                         selected
-                                          ? "border-white/40 bg-white/10 text-foreground"
+                                          ? "border-foreground bg-foreground font-medium text-background"
                                           : needsAttention && !selection?.sizeId
-                                            ? "border-white/35 text-foreground"
-                                            : "border-white/15 text-foreground hover:border-white/30"
+                                            ? "border-border-strong text-foreground"
+                                            : "border-border text-foreground hover:border-border-strong"
                                       }`}
                                     >
                                       {size.name}
@@ -341,7 +530,7 @@ export function PackDetail({ slug }: PackDetailProps) {
                 aria-live="polite"
                 className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-medium transition disabled:opacity-60 sm:min-w-44 sm:w-auto ${
                   justAdded
-                    ? "border border-white bg-black text-white"
+                    ? "border border-foreground bg-background text-foreground"
                     : "border border-transparent bg-foreground text-background hover:opacity-90"
                 }`}
               >

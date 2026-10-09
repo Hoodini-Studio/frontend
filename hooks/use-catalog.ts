@@ -83,10 +83,11 @@ export function usePublicCategories() {
   });
 }
 
-export function usePublicCollections() {
+export function usePublicCollections(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["catalog", "collections"],
     queryFn: ({ signal }) => listPublicCollections({ signal }),
+    enabled: options?.enabled ?? true,
   });
 }
 

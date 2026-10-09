@@ -73,7 +73,7 @@ export function EmailPreferencesSettings() {
       title={t("emailsTitle")}
       subtitle={t("emailsDescription")}
     >
-      <ul className="divide-y divide-white/10 border-y border-white/10">
+      <ul className="divide-y divide-border border-y border-border">
         {prefs.map((pref) => (
           <li
             key={pref.key}
@@ -92,7 +92,7 @@ export function EmailPreferencesSettings() {
               className={`relative h-7 w-12 shrink-0 rounded-full border transition disabled:opacity-60 ${
                 pref.value
                   ? "border-white/40 bg-white/20"
-                  : "border-white/15 bg-black/40"
+                  : "border-border bg-background"
               }`}
             >
               <span

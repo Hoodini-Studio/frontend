@@ -97,11 +97,14 @@ export function ProductCatalogOptions({
               const selected = selectedColorId === color.id;
               const className = `inline-flex items-center gap-2 border px-3 py-1.5 text-sm transition ${
                 selected
-                  ? "border-white/40 bg-white/10 text-foreground"
+                  ? "border-foreground bg-foreground font-medium text-background"
                   : emphasizeColor
-                    ? "border-white/35 text-foreground"
-                    : "border-white/15 text-foreground hover:border-white/30"
+                    ? "border-border-strong text-foreground"
+                    : "border-border text-foreground hover:border-border-strong"
               }`;
+              const swatchClass = selected
+                ? "h-3.5 w-3.5 rounded-full border-2 border-background"
+                : "h-3.5 w-3.5 rounded-full border border-border";
 
               if (selectable && onSelectColor) {
                 return (
@@ -113,7 +116,7 @@ export function ProductCatalogOptions({
                     className={className}
                   >
                     <span
-                      className="h-3.5 w-3.5 rounded-full border border-white/20"
+                      className={swatchClass}
                       style={{ backgroundColor: color.hex }}
                       aria-hidden="true"
                     />
@@ -125,7 +128,7 @@ export function ProductCatalogOptions({
               return (
                 <span key={color.id} className={className}>
                   <span
-                    className="h-3.5 w-3.5 rounded-full border border-white/20"
+                    className={swatchClass}
                     style={{ backgroundColor: color.hex }}
                     aria-hidden="true"
                   />
@@ -151,10 +154,10 @@ export function ProductCatalogOptions({
               const selected = selectedSizeId === size.id;
               const className = `min-w-10 border px-3 py-1.5 text-center text-sm transition ${
                 selected
-                  ? "border-white/40 bg-white/10 text-foreground"
+                  ? "border-foreground bg-foreground font-medium text-background"
                   : emphasizeSize
-                    ? "border-white/35 text-foreground"
-                    : "border-white/15 text-foreground hover:border-white/30"
+                    ? "border-border-strong text-foreground"
+                    : "border-border text-foreground hover:border-border-strong"
               }`;
 
               if (selectable && onSelectSize) {

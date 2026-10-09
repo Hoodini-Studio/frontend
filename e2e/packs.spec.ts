@@ -17,8 +17,12 @@ test.describe("Packs", () => {
 
     await expect(page.getByRole("heading", { name: samplePack.name })).toBeVisible();
     await expect(page.getByText("60.00 €")).toBeVisible();
-    await expect(page.getByText(sampleProduct.name)).toBeVisible();
-    await expect(page.getByText(sampleProductB.name)).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: sampleProduct.name, exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: sampleProductB.name, exact: true }),
+    ).toBeVisible();
 
     // Single color/size per line auto-selects; add should succeed.
     await page.getByRole("button", { name: "Add pack to cart" }).click();

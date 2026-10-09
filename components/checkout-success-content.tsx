@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Suspense } from "react";
+import { ArrowMark } from "@/components/brand/arrow-mark";
 
 function SuccessInner() {
   const t = useTranslations("store");
@@ -11,19 +12,23 @@ function SuccessInner() {
   const number = params.get("number");
 
   return (
-    <div className="mx-auto max-w-xl px-6 py-16 text-center">
-      <h1 className="font-display text-3xl font-semibold text-foreground">
+    <div className="mx-auto max-w-xl px-6 py-16 text-center sm:py-24">
+      <p className="text-[11px] uppercase tracking-[0.28em] text-muted">Hoodini Studio</p>
+      <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
         {t("checkoutSuccessTitle")}
       </h1>
       <p className="mt-4 text-muted">{t("checkoutSuccessMessage")}</p>
       {number ? (
-        <p className="mt-6 font-mono text-lg text-foreground">{number}</p>
+        <p className="mt-8 border border-border bg-surface px-4 py-3 font-mono text-lg text-foreground">
+          {number}
+        </p>
       ) : null}
       <Link
-        href="/"
-        className="mt-10 inline-flex rounded-xl border border-white/15 px-5 py-3 text-sm text-foreground transition hover:bg-white/5"
+        href="/#the-drop"
+        className="group mt-10 inline-flex items-center gap-2 bg-foreground px-5 py-3.5 text-sm font-medium text-background transition hover:opacity-90"
       >
         {t("backToShop")}
+        <ArrowMark className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
       </Link>
     </div>
   );

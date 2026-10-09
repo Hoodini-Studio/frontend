@@ -193,7 +193,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                 {showFavourites ? (
                   <FavouriteButton
                     productId={product.id}
-                    className="absolute right-3 top-3 z-20 h-10 w-10"
+                    className="absolute right-3 top-3 z-20"
                   />
                 ) : null}
 

@@ -44,8 +44,10 @@ export function CartPageContent() {
   };
 
   return (
-    <div className={pageShellClass("content", "py-12")}>
-      <h1 className="font-display text-3xl font-semibold text-foreground">{t("cartTitle")}</h1>
+    <div className={pageShellClass("content", "py-12 sm:py-16")}>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+        {t("cartTitle")}
+      </h1>
 
       {cartQuery.isLoading ? <CartSkeleton /> : null}
 
@@ -56,7 +58,7 @@ export function CartPageContent() {
       {cart && cart.items.length === 0 ? (
         <div className="mt-10 space-y-4">
           <p className="text-muted">{t("cartEmpty")}</p>
-          <Link href="/" className="inline-flex text-sm text-foreground underline-offset-4 hover:underline">
+          <Link href="/#the-drop" className="inline-flex text-sm text-foreground underline-offset-4 hover:underline">
             {t("backToShop")}
           </Link>
         </div>
@@ -64,10 +66,10 @@ export function CartPageContent() {
 
       {cart && cart.items.length > 0 ? (
         <div className="mt-10 space-y-8">
-          <ul className="divide-y divide-white/10 border-y border-white/10">
+          <ul className="divide-y divide-border border-y border-border">
             {cart.items.map((item) => (
               <li key={item.id} className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center">
-                <div className="relative h-24 w-20 shrink-0 overflow-hidden bg-white/5">
+                <div className="relative h-24 w-20 shrink-0 overflow-hidden bg-surface">
                   {item.image_url ? (
                     <Image
                       src={item.image_url}
@@ -131,7 +133,7 @@ export function CartPageContent() {
                     type="button"
                     disabled={pending || item.quantity <= 1}
                     onClick={() => void handleQty(item.id, item.quantity - 1)}
-                    className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-muted transition hover:bg-white/5 disabled:opacity-40"
+                    className="border border-border px-3 py-1.5 text-sm text-muted transition hover:border-border-strong hover:bg-surface disabled:opacity-40"
                   >
                     −
                   </button>
@@ -140,7 +142,7 @@ export function CartPageContent() {
                     type="button"
                     disabled={pending}
                     onClick={() => void handleQty(item.id, item.quantity + 1)}
-                    className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-muted transition hover:bg-white/5 disabled:opacity-40"
+                    className="border border-border px-3 py-1.5 text-sm text-muted transition hover:border-border-strong hover:bg-surface disabled:opacity-40"
                   >
                     +
                   </button>
@@ -148,7 +150,7 @@ export function CartPageContent() {
                     type="button"
                     disabled={pending}
                     onClick={() => void handleRemove(item.id)}
-                    className="rounded-lg border border-red-300/40 px-3 py-1.5 text-sm text-red-300 transition hover:bg-red-300/10 disabled:opacity-60"
+                    className="border border-red-300/40 px-3 py-1.5 text-sm text-red-300 transition hover:bg-red-300/10 disabled:opacity-60"
                   >
                     {t("cartRemove")}
                   </button>
@@ -167,7 +169,7 @@ export function CartPageContent() {
             </p>
             <Link
               href="/checkout"
-              className="inline-flex items-center justify-center rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background transition hover:opacity-90"
+              className="inline-flex items-center justify-center bg-foreground px-5 py-3.5 text-sm font-medium text-background transition hover:opacity-90"
             >
               {t("cartCheckout")}
             </Link>

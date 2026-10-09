@@ -9,6 +9,8 @@ export type CatalogCategory = {
   description_sq: string | null;
   sort_order: number;
   is_active: boolean;
+  /** Published products only; present on public list endpoints. */
+  products_count?: number;
   created_at: string;
   updated_at: string;
 };
@@ -24,6 +26,8 @@ export type CatalogCollection = {
   description_sq: string | null;
   sort_order: number;
   is_active: boolean;
+  /** Published products only; present on public list endpoints. */
+  products_count?: number;
   created_at: string;
   updated_at: string;
 };

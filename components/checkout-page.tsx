@@ -67,10 +67,10 @@ function isValidEmail(value: string): boolean {
 }
 
 function fieldClassName(hasError: boolean): string {
-  return `w-full rounded-xl border bg-black/40 px-4 py-3 text-foreground outline-none transition ${
+  return `w-full border bg-background px-4 py-3 text-foreground outline-none transition ${
     hasError
       ? "border-red-300/50 focus:border-red-300/70"
-      : "border-white/10 focus:border-white/30"
+      : "border-border focus:border-border-strong"
   }`;
 }
 

@@ -7,7 +7,9 @@ test.describe("Legal and newsletter", () => {
     await page.goto("/terms");
 
     await expect(page.getByRole("heading", { name: "Terms of Service" })).toBeVisible();
-    await expect(page.getByText(/Hoodini Studio terms/i)).toBeVisible();
+    await expect(
+      page.getByText(/By creating an account or placing an order on Hoodini Studio/i),
+    ).toBeVisible();
   });
 
   test("privacy page", async ({ page }) => {
@@ -15,7 +17,9 @@ test.describe("Legal and newsletter", () => {
     await page.goto("/privacy");
 
     await expect(page.getByRole("heading", { name: "Privacy Policy" })).toBeVisible();
-    await expect(page.getByText(/Hoodini Studio privacy policy/i)).toBeVisible();
+    await expect(
+      page.getByText(/This Privacy Policy explains what personal data Hoodini Studio collects/i),
+    ).toBeVisible();
   });
 
   test("newsletter subscribe on homepage", async ({ page }) => {

@@ -16,11 +16,11 @@ export function AccountSettingsSkeleton() {
         <SkeletonBlock className="mt-4 h-4 w-full max-w-md" />
       </div>
 
-      <div className="border-y border-white/10">
+      <div className="border-y border-border">
         {[0, 1, 2, 3].map((index) => (
           <div
             key={index}
-            className="flex items-center justify-between gap-4 border-b border-white/10 py-5 last:border-b-0"
+            className="flex items-center justify-between gap-4 border-b border-border py-5 last:border-b-0"
           >
             <div className="min-w-0 flex-1">
               <SkeletonBlock className="h-5 w-28" />
