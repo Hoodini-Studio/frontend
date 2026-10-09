@@ -27,8 +27,8 @@ function SuccessInner() {
         href="/#the-drop"
         className="group mt-10 inline-flex items-center gap-2 bg-foreground px-5 py-3.5 text-sm font-medium text-background transition hover:opacity-90"
       >
+        <ArrowMark className="h-3.5 w-3.5 rotate-180 transition group-hover:-translate-x-0.5" />
         {t("backToShop")}
-        <ArrowMark className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
       </Link>
     </div>
   );

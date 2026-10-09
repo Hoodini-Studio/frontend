@@ -69,6 +69,8 @@ test.describe("Admin", () => {
     await page.goto("/admin/newsletter");
 
     await expect(page.getByText("guest@example.com")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Send campaign" })).toBeVisible();
+    await expect(page.getByText("2 recipients")).toBeVisible();
   });
 
   test("users list", async ({ page }) => {
