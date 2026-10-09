@@ -79,7 +79,7 @@ export function StorefrontPacks() {
   const packs = data?.data ?? [];
 
   if (isError || (!isLoading && packs.length === 0)) {
-    return null;
+    return <div id="packs" className="h-0 overflow-hidden" aria-hidden="true" />;
   }
 
   return (

@@ -199,6 +199,7 @@ export type CheckoutInput = {
   payment_method: PaymentMethod;
   coupon_code?: string | null;
   terms_accepted?: boolean;
+  idempotency_key?: string;
 };
 
 export type ShippingProfileInput = {

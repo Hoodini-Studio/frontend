@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { NO_INDEX_ROBOTS } from "@/lib/site";
 
 export const metadata: Metadata = {
+  title: "Orders",
   robots: NO_INDEX_ROBOTS,
 };
 
-export default function ProfilePage() {
-  redirect("/account-settings");
+export default function OrdersLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
 }

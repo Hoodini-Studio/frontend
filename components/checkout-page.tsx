@@ -19,6 +19,21 @@ import { CheckoutSkeleton } from "@/components/ui/checkout-skeleton";
 import { Select } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 
+const CHECKOUT_IDEMPOTENCY_STORAGE_KEY = "hoodini.checkout-idempotency";
+
+function checkoutIdempotencyKey(ref: { current: string | null }): string {
+  if (ref.current) {
+    return ref.current;
+  }
+
+  const stored = window.sessionStorage.getItem(CHECKOUT_IDEMPOTENCY_STORAGE_KEY);
+  const key = stored || crypto.randomUUID();
+  window.sessionStorage.setItem(CHECKOUT_IDEMPOTENCY_STORAGE_KEY, key);
+  ref.current = key;
+
+  return key;
+}
+
 type FieldKey =
   | "customer_name"
   | "phone"
@@ -100,6 +115,7 @@ export function CheckoutPageContent() {
   const zonesQuery = useShippingZones();
   const placeOrder = usePlaceCheckoutMutation();
   const formRef = useRef<HTMLDivElement | null>(null);
+  const idempotencyKeyRef = useRef<string | null>(null);
 
   const [customerName, setCustomerName] = useState("");
   const [email, setEmail] = useState("");
@@ -215,9 +231,12 @@ export function CheckoutPageContent() {
         notes: notes.trim() || null,
         payment_method: paymentMethod,
         coupon_code: appliedCoupon,
+        idempotency_key: checkoutIdempotencyKey(idempotencyKeyRef),
         ...(needsTermsConsent ? { terms_accepted: true } : {}),
       });
 
+      window.sessionStorage.removeItem(CHECKOUT_IDEMPOTENCY_STORAGE_KEY);
+      idempotencyKeyRef.current = null;
       router.push(`/checkout/success?number=${encodeURIComponent(response.data.number)}`);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -247,6 +266,17 @@ export function CheckoutPageContent() {
 
   if (cartQuery.isLoading) {
     return <CheckoutSkeleton />;
+  }
+
+  if (cartQuery.isError) {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-red-300">{t("cartUnableToLoad")}</p>
+        <Link href="/cart" className="text-sm text-foreground underline-offset-4 hover:underline">
+          {t("cartTitle")}
+        </Link>
+      </div>
+    );
   }
 
   if (!cart || cart.items.length === 0) {

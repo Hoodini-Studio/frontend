@@ -351,6 +351,10 @@
     "unsubscribedBody": "Nuk do të merrni më email-e marketing nga Hoodini Studio.",
     "unsubscribeErrorTitle": "Lidhje e pavlefshme",
     "unsubscribeErrorBody": "Kjo lidhje çabonimi është e pavlefshme ose ka skaduar.",
+    "confirmTitle": "Të çabonohesh nga newsletter-i?",
+    "confirmBody": "Nuk do të merrni më email-e newsletter nga Hoodini Studio në këtë adresë.",
+    "confirmButton": "Çabohu",
+    "confirming": "Duke u çabonuar…",
     "backHome": "Kthehu te dyqani"
   },
   "adminNewsletter": {
@@ -378,6 +382,7 @@
     "eyebrow": "Admin",
     "title": "Paneli",
     "subtitle": "Drejtoni katalogun Hoodini dhe mbani operacionet e dyqanit në lëvizje.",
+    "statsUnable": "Nuk u ngarkuan numërimet e panelit.",
     "catalogSection": "Katalogu",
     "moreSection": "Më shumë",
     "upcomingSection": "Së shpejti",

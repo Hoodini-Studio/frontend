@@ -2,40 +2,29 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useAdminOrders } from "@/hooks/use-commerce";
-import { useAdminBundles } from "@/hooks/use-bundles";
-import { useAdminProducts } from "@/hooks/use-products";
+import { useAdminStats } from "@/hooks/use-commerce";
 import { SkeletonBlock } from "@/components/ui/skeleton-block";
 import { pageShellClass } from "@/lib/layout";
 
 export function AdminDashboard() {
   const t = useTranslations("admin");
-  const all = useAdminProducts({ perPage: 1 });
-  const published = useAdminProducts({ status: "published", perPage: 1 });
-  const drafts = useAdminProducts({ status: "draft", perPage: 1 });
-  const allPacks = useAdminBundles({ perPage: 1 });
-  const publishedPacks = useAdminBundles({ status: "published", perPage: 1 });
-  const draftPacks = useAdminBundles({ status: "draft", perPage: 1 });
-  const allOrders = useAdminOrders({ per_page: 1 });
-  const pendingOrders = useAdminOrders({ status: "pending", per_page: 1 });
-  const confirmedOrders = useAdminOrders({ status: "confirmed", per_page: 1 });
+  const statsQuery = useAdminStats();
+  const stats = statsQuery.data;
+  const countsLoading = statsQuery.isLoading;
 
-  const total = all.data?.meta?.total;
-  const publishedCount = published.data?.meta?.total;
-  const draftCount = drafts.data?.meta?.total;
-  const countsLoading = all.isLoading || published.isLoading || drafts.isLoading;
+  const total = stats?.products.total;
+  const publishedCount = stats?.products.published;
+  const draftCount = stats?.products.draft;
 
-  const packsTotal = allPacks.data?.meta?.total;
-  const packsPublished = publishedPacks.data?.meta?.total;
-  const packsDrafts = draftPacks.data?.meta?.total;
-  const packsCountsLoading =
-    allPacks.isLoading || publishedPacks.isLoading || draftPacks.isLoading;
+  const packsTotal = stats?.packs.total;
+  const packsPublished = stats?.packs.published;
+  const packsDrafts = stats?.packs.draft;
+  const packsCountsLoading = countsLoading;
 
-  const ordersTotal = allOrders.data?.meta?.total;
-  const pendingCount = pendingOrders.data?.meta?.total;
-  const confirmedCount = confirmedOrders.data?.meta?.total;
-  const ordersCountsLoading =
-    allOrders.isLoading || pendingOrders.isLoading || confirmedOrders.isLoading;
+  const ordersTotal = stats?.orders.total;
+  const pendingCount = stats?.orders.pending;
+  const confirmedCount = stats?.orders.confirmed;
+  const ordersCountsLoading = countsLoading;
 
   return (
     <main className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden">
@@ -56,6 +45,11 @@ export function AdminDashboard() {
           <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">
             {t("subtitle")}
           </p>
+          {statsQuery.isError ? (
+            <p className="mt-4 text-sm text-red-300" role="alert">
+              {t("statsUnable")}
+            </p>
+          ) : null}
         </header>
 
         <section className="mt-14 animate-[fade-in-up_0.7s_ease-out] [animation-delay:120ms] [animation-fill-mode:both]">

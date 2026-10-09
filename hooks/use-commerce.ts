@@ -7,6 +7,7 @@ import {
   createAdminOrder,
   deleteAdminCoupon,
   getAdminOrder,
+  getAdminStats,
   getCart,
   getMyOrder,
   listAdminCoupons,
@@ -170,9 +171,9 @@ export function usePlaceCheckoutMutation() {
 
   return useMutation({
     mutationFn: (payload: CheckoutInput) => placeCheckout(payload),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["cart"] });
-      await queryClient.invalidateQueries({ queryKey: ["orders"] });
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["cart"] });
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
     },
   });
 }
@@ -200,6 +201,13 @@ export function useMyOrder(id: string) {
     queryKey: ["orders", "mine", id],
     queryFn: async ({ signal }) => (await getMyOrder(id, { signal })).data,
     enabled: Boolean(id),
+  });
+}
+
+export function useAdminStats() {
+  return useQuery({
+    queryKey: ["admin", "stats"],
+    queryFn: async ({ signal }) => (await getAdminStats({ signal })).data,
   });
 }
 

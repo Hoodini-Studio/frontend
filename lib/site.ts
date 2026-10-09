@@ -32,6 +32,12 @@ export function getSiteUrl(): string {
  * Preview/development Vercel deployments must not compete with production in search.
  * Non-Vercel (local) defaults to indexable metadata for production-like builds.
  */
+/** Account, checkout, auth, and admin pages must not be indexed. */
+export const NO_INDEX_ROBOTS = {
+  index: false,
+  follow: false,
+} as const;
+
 export function shouldAllowSearchIndexing(): boolean {
   const env = process.env.VERCEL_ENV;
   if (env === "preview" || env === "development") {

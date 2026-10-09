@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { StorefrontOnly } from "@/components/auth/storefront-only";
 import { PackDetailPage } from "@/components/pack-detail";
+import { getSiteUrl } from "@/lib/site";
+import { jsonLdScript, productJsonLd } from "@/lib/structured-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -13,6 +15,7 @@ type PackPayload = {
     name?: string | null;
     description?: string | null;
     description_en?: string | null;
+    price?: number | null;
     primary_image_url?: string | null;
   };
 };
@@ -70,10 +73,48 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default function PackPage({ params }: PageProps) {
+export default async function PackPage({ params }: PageProps) {
+  const { slug } = await params;
+  let pack: PackPayload["data"] | null = null;
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/bundles/${encodeURIComponent(slug)}`,
+      {
+        headers: { Accept: "application/json" },
+        next: { revalidate: 60 },
+      },
+    );
+    if (response.ok) {
+      const payload = (await response.json()) as PackPayload;
+      pack = payload.data ?? null;
+    }
+  } catch {
+    pack = null;
+  }
+
+  const title = pack?.name?.trim() || "";
+  const structured = title
+    ? productJsonLd({
+        name: title,
+        description: pack?.description?.trim() || pack?.description_en?.trim(),
+        url: `${getSiteUrl()}/packs/${slug}`,
+        image: pack?.primary_image_url,
+        priceCents: typeof pack?.price === "number" ? pack.price : null,
+      })
+    : null;
+
   return (
-    <StorefrontOnly>
-      <PackDetailPage params={params} />
-    </StorefrontOnly>
+    <>
+      {structured ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(structured) }}
+        />
+      ) : null}
+      <StorefrontOnly>
+        <PackDetailPage params={params} />
+      </StorefrontOnly>
+    </>
   );
 }

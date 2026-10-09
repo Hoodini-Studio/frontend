@@ -38,7 +38,7 @@ function CollectionStoriesContent() {
     .slice(0, 6);
 
   if (!isLoading && collections.length === 0) {
-    return null;
+    return <div id="collections" className="h-0 overflow-hidden" aria-hidden="true" />;
   }
 
   const select = (slug: string) => {

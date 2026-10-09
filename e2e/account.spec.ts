@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/test";
 import { installApiMocks } from "./fixtures/api";
 import { sampleOrder, sampleProduct } from "./fixtures/data";
 

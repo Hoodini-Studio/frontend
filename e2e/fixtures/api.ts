@@ -437,6 +437,17 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
       return;
     }
 
+    if (path === "/api/admin/stats" && method === "GET") {
+      await fulfillJson(route, 200, {
+        data: {
+          products: { total: 2, published: 2, draft: 0 },
+          packs: { total: 1, published: 1, draft: 0 },
+          orders: { total: 1, pending: 1, confirmed: 0 },
+        },
+      });
+      return;
+    }
+
     if (path === "/api/admin/products" && method === "GET") {
       await fulfillJson(route, 200, {
         data: [sampleProduct, sampleProductB],

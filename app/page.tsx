@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StorefrontHome } from "@/components/storefront-home";
+import { jsonLdScript, organizationJsonLd } from "@/lib/structured-data";
 
 const description = "Shop the latest from Hoodini Studio.";
 
@@ -17,13 +18,22 @@ export const metadata: Metadata = {
     url: "/",
   },
   twitter: {
-    // TODO: switch to summary_large_image when opengraph-image.png is added
-    card: "summary",
+    card: "summary_large_image",
     title: "Hoodini Studio",
     description,
   },
 };
 
 export default function Home() {
-  return <StorefrontHome />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdScript(organizationJsonLd()),
+        }}
+      />
+      <StorefrontHome />
+    </>
+  );
 }

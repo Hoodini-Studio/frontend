@@ -351,6 +351,10 @@
     "unsubscribedBody": "You will no longer receive newsletter emails from Hoodini Studio.",
     "unsubscribeErrorTitle": "Link invalid",
     "unsubscribeErrorBody": "This unsubscribe link is invalid or expired.",
+    "confirmTitle": "Unsubscribe from the newsletter?",
+    "confirmBody": "You will stop receiving Hoodini Studio newsletter emails at this address.",
+    "confirmButton": "Unsubscribe",
+    "confirming": "Unsubscribing…",
     "backHome": "Back to shop"
   },
   "adminNewsletter": {
@@ -378,6 +382,7 @@
     "eyebrow": "Admin",
     "title": "Dashboard",
     "subtitle": "Run the Hoodini catalog and keep store operations moving.",
+    "statsUnable": "Unable to load dashboard counts.",
     "catalogSection": "Catalog",
     "moreSection": "More",
     "upcomingSection": "Coming next",

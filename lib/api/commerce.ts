@@ -229,6 +229,18 @@ export function updateAdminOrderPaymentStatus(id: string, payment_status: Paymen
   });
 }
 
+export type AdminStats = {
+  products: { total: number; published: number; draft: number };
+  packs: { total: number; published: number; draft: number };
+  orders: { total: number; pending: number; confirmed: number };
+};
+
+export function getAdminStats(init?: { signal?: AbortSignal }) {
+  return apiRequest<{ data: AdminStats }>("/api/admin/stats", {
+    signal: init?.signal,
+  });
+}
+
 export function updateShippingProfile(payload: ShippingProfileInput) {
   return apiRequest<AuthResponse>("/api/auth/shipping-profile", {
     method: "PATCH",
