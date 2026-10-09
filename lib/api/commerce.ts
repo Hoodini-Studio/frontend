@@ -1,4 +1,4 @@
-import { apiRequest } from "@/lib/api/client";
+import { apiDownloadFile, apiRequest } from "@/lib/api/client";
 import type {
   Cart,
   CheckoutInput,
@@ -6,7 +6,10 @@ import type {
   CountryCode,
   Coupon,
   CouponInput,
+  ManualOrderInput,
   Order,
+  OrderSource,
+  OrderSourceOption,
   OrderStatus,
   PaymentStatus,
   ShippingProfileInput,
@@ -150,27 +153,59 @@ export type AdminOrdersParams = {
   status?: OrderStatus | "";
   payment_status?: PaymentStatus | "";
   country_code?: CountryCode | "";
+  source?: OrderSource | "";
   search?: string;
+  date_from?: string;
+  date_to?: string;
   page?: number;
   per_page?: number;
   signal?: AbortSignal;
 };
 
-export function listAdminOrders(params: AdminOrdersParams = {}) {
+function adminOrdersQuery(params: AdminOrdersParams, includePage = true) {
   const query = new URLSearchParams();
   if (params.status) query.set("status", params.status);
   if (params.payment_status) query.set("payment_status", params.payment_status);
   if (params.country_code) query.set("country_code", params.country_code);
+  if (params.source) query.set("source", params.source);
   if (params.search) query.set("search", params.search);
-  if (params.page) query.set("page", String(params.page));
-  if (params.per_page) query.set("per_page", String(params.per_page));
-  const qs = query.toString();
+  if (params.date_from) query.set("date_from", params.date_from);
+  if (params.date_to) query.set("date_to", params.date_to);
+  if (includePage && params.page) query.set("page", String(params.page));
+  if (includePage && params.per_page) query.set("per_page", String(params.per_page));
+  return query.toString();
+}
+
+export function listAdminOrders(params: AdminOrdersParams = {}) {
+  const qs = adminOrdersQuery(params);
 
   return apiRequest<{
     data: Order[];
     meta?: { current_page: number; last_page: number; total: number };
   }>(`/api/admin/orders${qs ? `?${qs}` : ""}`, {
     signal: params.signal,
+  });
+}
+
+export function downloadAdminOrdersCsv(params: AdminOrdersParams = {}) {
+  const qs = adminOrdersQuery(params, false);
+
+  return apiDownloadFile(
+    `/api/admin/orders/export${qs ? `?${qs}` : ""}`,
+    "orders.csv",
+  );
+}
+
+export function listAdminOrderSources(init?: { signal?: AbortSignal }) {
+  return apiRequest<{ data: OrderSourceOption[] }>("/api/admin/order-sources", {
+    signal: init?.signal,
+  });
+}
+
+export function createAdminOrder(payload: ManualOrderInput) {
+  return apiRequest<{ data: Order }>("/api/admin/orders", {
+    method: "POST",
+    body: payload,
   });
 }
 

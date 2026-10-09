@@ -63,7 +63,9 @@ export function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
           </h1>
           <p className="text-sm text-muted print:hidden">
             {t(`status_${order.status}`)} · {t(`payment_${order.payment_status}`)} ·{" "}
-            {t(`payment_${order.payment_method}`)}
+            {t(`payment_${order.payment_method}`)} ·{" "}
+            {order.source_label ?? order.source ?? "Web"}
+            {order.external_ref ? ` · ${order.external_ref}` : ""}
           </p>
           <p className="text-sm text-muted print:text-[10px] print:text-black/70">
             {t("placedAt")}: {formatPlacedAt(order.created_at, locale)}

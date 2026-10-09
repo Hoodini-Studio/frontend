@@ -4,11 +4,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addCartItem,
   createAdminCoupon,
+  createAdminOrder,
   deleteAdminCoupon,
   getAdminOrder,
   getCart,
   getMyOrder,
   listAdminCoupons,
+  listAdminOrderSources,
   listAdminOrders,
   listAdminShippingZones,
   listMyOrders,
@@ -28,6 +30,7 @@ import type {
   CheckoutInput,
   CountryCode,
   CouponInput,
+  ManualOrderInput,
   OrderStatus,
   PaymentStatus,
   ShippingProfileInput,
@@ -174,14 +177,21 @@ export function usePlaceCheckoutMutation() {
   });
 }
 
-export function useMyOrders(params?: { page?: number; per_page?: number }) {
+export function useMyOrders(params?: {
+  page?: number;
+  per_page?: number;
+}) {
   const page = params?.page ?? 1;
   const perPage = params?.per_page ?? 10;
 
   return useQuery({
-    queryKey: ["orders", "mine", { page, perPage }],
+    queryKey: ["orders", "mine", { page, per_page: perPage }],
     queryFn: async ({ signal }) =>
-      listMyOrders({ page, per_page: perPage, signal }),
+      listMyOrders({
+        page,
+        per_page: perPage,
+        signal,
+      }),
   });
 }
 
@@ -228,6 +238,28 @@ export function useUpdateAdminOrderPaymentMutation() {
       updateAdminOrderPaymentStatus(id, payment_status),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
+    },
+  });
+}
+
+export function useAdminOrderSources(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["admin", "order-sources"],
+    queryFn: ({ signal }) => listAdminOrderSources({ signal }),
+    enabled: options?.enabled ?? true,
+  });
+}
+
+export function useCreateAdminOrderMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ManualOrderInput) => createAdminOrder(payload),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin", "orders"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin", "order-sources"] }),
+      ]);
     },
   });
 }

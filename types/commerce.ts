@@ -96,6 +96,14 @@ export type CouponInput = {
 export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
 export type PaymentMethod = "cash" | "card";
 export type PaymentStatus = "unpaid" | "paid";
+/** Slug stored on the order (e.g. web, instagram, facebook). */
+export type OrderSource = string;
+
+export type OrderSourceOption = {
+  id: string;
+  slug: string;
+  name: string;
+};
 
 export type OrderItem = {
   id: string;
@@ -130,11 +138,53 @@ export type Order = {
   address_line: string;
   postal_code: string | null;
   notes: string | null;
+  source?: OrderSource;
+  source_label?: string | null;
+  external_ref?: string | null;
   coupon_id?: string | null;
   coupon_code?: string | null;
   items?: OrderItem[];
   created_at: string;
   updated_at: string;
+};
+
+export type ManualOrderLineInput =
+  | {
+      type: "product";
+      product_id: string;
+      quantity: number;
+      color_label?: string | null;
+      size_label?: string | null;
+      gender_label?: string | null;
+    }
+  | {
+      type: "pack";
+      bundle_id: string;
+      quantity: number;
+    }
+  | {
+      type: "custom";
+      name: string;
+      unit_price_cents: number;
+      quantity: number;
+      color_label?: string | null;
+      size_label?: string | null;
+    };
+
+export type ManualOrderInput = {
+  customer_name: string;
+  email?: string | null;
+  phone: string;
+  user_id?: string | null;
+  country_code: CountryCode;
+  city: string;
+  address_line: string;
+  postal_code?: string | null;
+  notes?: string | null;
+  source: OrderSource;
+  external_ref?: string | null;
+  shipping_cents?: number | null;
+  items: ManualOrderLineInput[];
 };
 
 export type CheckoutInput = {

@@ -431,11 +431,37 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
       return;
     }
 
-    if (path === "/api/admin/orders" && method === "GET") {
+    if (path.startsWith("/api/admin/orders/export") && method === "GET") {
+      await route.fulfill({
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv; charset=UTF-8",
+          "Content-Disposition": 'attachment; filename="orders.csv"',
+        },
+        body: "number\nHS-E2E-1\n",
+      });
+      return;
+    }
+
+    if (path.startsWith("/api/admin/orders") && method === "GET" && !path.includes("/orders/")) {
       await fulfillJson(route, 200, {
         data: orders,
         meta: listMeta(orders.length),
       });
+      return;
+    }
+
+    if (path === "/api/admin/orders" && method === "POST") {
+      const body = request.postDataJSON() as Partial<Order>;
+      const created = {
+        ...sampleOrder,
+        id: "order-manual-1",
+        number: "HS-MANUAL-1",
+        source: "instagram" as const,
+        ...body,
+      };
+      orders = [created, ...orders];
+      await fulfillJson(route, 201, { data: created });
       return;
     }
 
@@ -540,6 +566,25 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
         data: [customerUser, adminUser],
         meta: listMeta(2),
       });
+      return;
+    }
+
+    if (path.startsWith("/api/admin/users/") && method === "GET") {
+      await fulfillJson(route, 200, {
+        data: customerUser,
+        orders: { data: orders, meta: listMeta(orders.length) },
+      });
+      return;
+    }
+
+    if (path.startsWith("/api/admin/users/") && method === "PATCH") {
+      const body = request.postDataJSON() as Partial<typeof customerUser>;
+      await fulfillJson(route, 200, { data: { ...customerUser, ...body } });
+      return;
+    }
+
+    if (path.startsWith("/api/admin/users/") && method === "DELETE") {
+      await fulfillJson(route, 200, { message: "User deleted." });
       return;
     }
 

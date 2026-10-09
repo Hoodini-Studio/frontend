@@ -382,6 +382,9 @@ export const sampleOrder: Order = {
   address_line: "Rruga B 1",
   postal_code: "10000",
   notes: null,
+  source: "web",
+  source_label: "Web",
+  external_ref: null,
   coupon_id: null,
   coupon_code: null,
   items: [

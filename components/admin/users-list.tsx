@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useAdminUsers } from "@/hooks/use-users";
@@ -129,6 +130,7 @@ export function UsersList() {
                 <th className="px-4 py-3 font-medium">{t("email")}</th>
                 <th className="px-4 py-3 font-medium">{t("role")}</th>
                 <th className="px-4 py-3 font-medium">{t("joined")}</th>
+                <th className="px-4 py-3 font-medium">{t("actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
@@ -156,6 +158,14 @@ export function UsersList() {
                   </td>
                   <td className="px-4 py-3 text-muted">
                     {formatJoinedAt(user.created_at, locale)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/admin/users/${user.id}`}
+                      className="rounded-lg border border-white/15 px-3 py-1.5 text-sm text-muted transition hover:bg-white/5 hover:text-foreground"
+                    >
+                      {t("view")}
+                    </Link>
                   </td>
                 </tr>
               ))}
