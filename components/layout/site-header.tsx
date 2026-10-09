@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-commerce";
-import { useFavouriteIds } from "@/hooks/use-favourites";
+import { favouriteCount, useFavouriteIds } from "@/hooks/use-favourites";
 import { UserMenu } from "@/components/layout/user-menu";
 import { getHomePathForUser, isAdmin } from "@/lib/auth/roles";
 import { PAGE_WIDTH } from "@/lib/layout";
@@ -60,7 +60,7 @@ export function SiteHeader() {
   });
   const homePath = getHomePathForUser(user);
   const cartCount = cartQuery.data?.item_count ?? 0;
-  const favouritesCount = favouritesQuery.data?.length ?? 0;
+  const favouritesCount = favouriteCount(favouritesQuery.data);
   const previousCountRef = useRef<number | null>(null);
   const [badgeBumping, setBadgeBumping] = useState(false);
 

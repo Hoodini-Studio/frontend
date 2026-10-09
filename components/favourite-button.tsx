@@ -1,11 +1,17 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useFavouriteIds, useToggleFavouriteMutation } from "@/hooks/use-favourites";
+import {
+  isBundleFavourite,
+  isProductFavourite,
+  useFavouriteIds,
+  useToggleFavouriteMutation,
+} from "@/hooks/use-favourites";
 import { useToast } from "@/providers/toast-provider";
 
 type FavouriteButtonProps = {
-  productId: string;
+  productId?: string;
+  bundleId?: string;
   className?: string;
   stopPropagation?: boolean;
 };
@@ -30,6 +36,7 @@ function HeartIcon({ filled, className }: { filled: boolean; className?: string 
 
 export function FavouriteButton({
   productId,
+  bundleId,
   className = "",
   stopPropagation = false,
 }: FavouriteButtonProps) {
@@ -37,7 +44,12 @@ export function FavouriteButton({
   const { toast } = useToast();
   const idsQuery = useFavouriteIds();
   const toggle = useToggleFavouriteMutation();
-  const isFavourite = (idsQuery.data ?? []).includes(productId);
+
+  const isFavourite = bundleId
+    ? isBundleFavourite(idsQuery.data, bundleId)
+    : productId
+      ? isProductFavourite(idsQuery.data, productId)
+      : false;
 
   const onClick = (event: React.MouseEvent) => {
     if (stopPropagation) {
@@ -45,12 +57,12 @@ export function FavouriteButton({
       event.stopPropagation();
     }
 
-    if (toggle.isPending) {
+    if (toggle.isPending || (!productId && !bundleId)) {
       return;
     }
 
     void toggle
-      .mutateAsync({ productId, isFavourite })
+      .mutateAsync({ productId, bundleId, isFavourite })
       .catch(() => {
         toast(t("unableToUpdateFavourites"), { variant: "error" });
       });

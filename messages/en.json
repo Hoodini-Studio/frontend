@@ -110,7 +110,7 @@
     "favouritesTitle": "Favourites",
     "favouritesSubtitle": "Pieces you’ve saved for later.",
     "favouritesEmptyTitle": "No favourites yet",
-    "favouritesEmptyMessage": "Tap the heart on a product to save it here.",
+    "favouritesEmptyMessage": "Tap the heart on a product or pack to save it here.",
     "unableToLoadFavourites": "Unable to load favourites.",
     "selectOneOption": "Select {option}",
     "selectMultipleOptions": "Select {options}",

@@ -4,10 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowMark } from "@/components/brand/arrow-mark";
+import { FavouriteButton } from "@/components/favourite-button";
 import { Reveal } from "@/components/ui/reveal";
+import { useCurrentUser } from "@/hooks/use-auth";
 import { useHomeLayer } from "@/hooks/use-home-layer";
 import { useHomepageCopy } from "@/hooks/use-homepage-copy";
 import { usePublishedBundles } from "@/hooks/use-bundles";
+import { isAdmin } from "@/lib/auth/roles";
 import { formatEuroFromCents } from "@/lib/money";
 import { pageShellClass } from "@/lib/layout";
 import { ProductGridSkeleton } from "@/components/ui/product-grid-skeleton";
@@ -67,6 +70,8 @@ export function StorefrontPacks() {
   const t = useTranslations("store");
   const tHome = useTranslations("home");
   const copy = useHomepageCopy();
+  const { data: user } = useCurrentUser();
+  const showFavourites = !isAdmin(user);
   const [layerRef, layer] = useHomeLayer({ z: 2, pin: "never" });
   const { data, isLoading, isError } = usePublishedBundles({
     perPage: HOME_PACK_LIMIT,
@@ -120,7 +125,7 @@ export function StorefrontPacks() {
               const reverse = index % 2 === 1;
 
               return (
-                <li key={pack.id}>
+                <li key={pack.id} className="relative">
                   <Reveal delayMs={index * 80}>
                     <Link
                       href={`/packs/${pack.slug}`}
@@ -143,6 +148,13 @@ export function StorefrontPacks() {
                         <span className="absolute left-4 top-4 border border-foreground/50 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-foreground backdrop-blur-sm">
                           {tHome("packBadge")}
                         </span>
+                        {showFavourites ? (
+                          <FavouriteButton
+                            bundleId={pack.id}
+                            stopPropagation
+                            className="absolute right-4 top-4 z-10"
+                          />
+                        ) : null}
                       </div>
                       <div className="flex flex-col justify-end px-6 py-8 sm:px-10 sm:py-12">
                         {itemCount > 0 ? (

@@ -52,6 +52,8 @@ type GalleryItem =
   | { key: string; kind: "saved"; id: string; url: string }
   | { key: string; kind: "pending"; file: File; previewUrl: string };
 
+type PendingGalleryItem = Extract<GalleryItem, { kind: "pending" }>;
+
 type SavePhase = "idle" | "saving" | "uploading";
 
 function savedItemsFromProduct(product?: Product): GalleryItem[] {
@@ -229,7 +231,7 @@ export function ProductForm({ product }: ProductFormProps) {
       return;
     }
 
-    const next: GalleryItem[] = Array.from(fileList).map((file) => ({
+    const next: PendingGalleryItem[] = Array.from(fileList).map((file) => ({
       key: crypto.randomUUID(),
       kind: "pending" as const,
       file,

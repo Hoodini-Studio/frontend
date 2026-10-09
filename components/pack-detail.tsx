@@ -6,11 +6,14 @@ import { useLocale, useTranslations } from "next-intl";
 import { use, useEffect, useRef, useState } from "react";
 import { useAddCartItemMutation } from "@/hooks/use-commerce";
 import { usePublishedBundle } from "@/hooks/use-bundles";
+import { useCurrentUser } from "@/hooks/use-auth";
+import { isAdmin } from "@/lib/auth/roles";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { localizedDescription, localizedName } from "@/lib/i18n/localized";
 import { formatEuroFromCents } from "@/lib/money";
 import { pageShellClass } from "@/lib/layout";
 import { useToast } from "@/providers/toast-provider";
+import { FavouriteButton } from "@/components/favourite-button";
 import { ProductDetailSkeleton } from "@/components/ui/product-detail-skeleton";
 import type { BundleItem } from "@/types/bundle";
 
@@ -28,6 +31,8 @@ export function PackDetail({ slug }: PackDetailProps) {
   const t = useTranslations("store");
   const locale = normalizeLocale(useLocale());
   const { toast } = useToast();
+  const { data: user } = useCurrentUser();
+  const showFavourites = !isAdmin(user);
   const { data, isLoading, isError } = usePublishedBundle(slug);
   const pack = data?.data;
   const addToCart = useAddCartItemMutation();
@@ -254,6 +259,13 @@ export function PackDetail({ slug }: PackDetailProps) {
                     fetchPriority="high"
                     className="object-cover animate-[fade-in-up_0.35s_ease-out]"
                     sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                ) : null}
+
+                {showFavourites ? (
+                  <FavouriteButton
+                    bundleId={pack.id}
+                    className="absolute right-3 top-3 z-20"
                   />
                 ) : null}
 

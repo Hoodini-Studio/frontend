@@ -57,7 +57,8 @@ function pathname(url: URL): string {
 export async function installApiMocks(page: Page, options: ApiMockOptions = {}) {
   let auth = options.auth ?? "guest";
   let cart = options.cart ?? (auth === "guest" ? emptyCart : emptyCart);
-  let favouriteIds: string[] = [];
+  let favouriteProductIds: string[] = [];
+  let favouriteBundleIds: string[] = [];
   let orders = options.orders ?? [sampleOrder];
   let user = currentUser(auth, options.userOverrides);
   let coupons = [sampleCoupon];
@@ -272,14 +273,34 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
 
     if (path === "/api/favourites/ids" && method === "GET") {
       await fulfillJson(route, 200, {
-        data: favouriteIds,
-        meta: { count: favouriteIds.length },
+        data: {
+          product_ids: favouriteProductIds,
+          bundle_ids: favouriteBundleIds,
+        },
+        meta: {
+          count: favouriteProductIds.length + favouriteBundleIds.length,
+        },
       });
       return;
     }
 
     if (path === "/api/favourites" && method === "GET") {
-      const data = favouriteIds.includes(sampleProduct.id) ? [sampleProduct] : [];
+      const data = [
+        ...favouriteProductIds
+          .filter((id) => id === sampleProduct.id)
+          .map((id) => ({
+            type: "product" as const,
+            id,
+            product: sampleProduct,
+          })),
+        ...favouriteBundleIds
+          .filter((id) => id === samplePack.id)
+          .map((id) => ({
+            type: "bundle" as const,
+            id,
+            bundle: samplePack,
+          })),
+      ];
       await fulfillJson(route, 200, {
         data,
         meta: { count: data.length },
@@ -288,19 +309,51 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
     }
 
     if (path === "/api/favourites" && method === "POST") {
-      favouriteIds = [sampleProduct.id];
+      const body = request.postDataJSON() as {
+        product_id?: string;
+        bundle_id?: string;
+      };
+      if (body.bundle_id) {
+        favouriteBundleIds = [body.bundle_id];
+      } else if (body.product_id) {
+        favouriteProductIds = [body.product_id];
+      }
       await fulfillJson(route, 200, {
-        data: favouriteIds,
-        meta: { count: favouriteIds.length },
+        data: {
+          product_ids: favouriteProductIds,
+          bundle_ids: favouriteBundleIds,
+        },
+        meta: {
+          count: favouriteProductIds.length + favouriteBundleIds.length,
+        },
+      });
+      return;
+    }
+
+    if (path.startsWith("/api/favourites/bundles/") && method === "DELETE") {
+      favouriteBundleIds = [];
+      await fulfillJson(route, 200, {
+        data: {
+          product_ids: favouriteProductIds,
+          bundle_ids: favouriteBundleIds,
+        },
+        meta: {
+          count: favouriteProductIds.length + favouriteBundleIds.length,
+        },
       });
       return;
     }
 
     if (path.startsWith("/api/favourites/") && method === "DELETE") {
-      favouriteIds = [];
+      favouriteProductIds = [];
       await fulfillJson(route, 200, {
-        data: favouriteIds,
-        meta: { count: 0 },
+        data: {
+          product_ids: favouriteProductIds,
+          bundle_ids: favouriteBundleIds,
+        },
+        meta: {
+          count: favouriteProductIds.length + favouriteBundleIds.length,
+        },
       });
       return;
     }
@@ -604,7 +657,11 @@ export async function installApiMocks(page: Page, options: ApiMockOptions = {}) 
       cart = next;
     },
     setFavouriteIds(ids: string[]) {
-      favouriteIds = ids;
+      favouriteProductIds = ids;
+      favouriteBundleIds = [];
+    },
+    setFavouriteBundleIds(ids: string[]) {
+      favouriteBundleIds = ids;
     },
   };
 }

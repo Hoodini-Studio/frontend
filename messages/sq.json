@@ -110,7 +110,7 @@
     "favouritesTitle": "Të preferuarat",
     "favouritesSubtitle": "Produktet që keni ruajtur për më vonë.",
     "favouritesEmptyTitle": "Nuk ka të preferuara ende",
-    "favouritesEmptyMessage": "Shtypni zemrën te një produkt për ta ruajtur këtu.",
+    "favouritesEmptyMessage": "Shtypni zemrën te një produkt ose paketë për ta ruajtur këtu.",
     "unableToLoadFavourites": "Nuk u arrit të ngarkohen të preferuarat.",
     "selectOneOption": "Zgjidhni: {option}",
     "selectMultipleOptions": "Zgjidhni: {options}",
